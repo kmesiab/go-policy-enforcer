@@ -1,0 +1,10 @@
+{
+  "name": "FinalizedPolicy",
+  "rules": [
+    {
+      "field": "finalized",
+      "operator": "eq",
+      "value": true
+    }
+  ]
+}

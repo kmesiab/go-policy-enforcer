@@ -1,0 +1,10 @@
+{
+  "name": "IdRequiredPolicy",
+  "rules": [
+    {
+      "field": "id",
+      "operator": ">",
+      "value": 0
+    }
+  ]
+}
