@@ -87,6 +87,75 @@ if enforcer.Enforce(resource) {
 }
 ```
 
+### PolicyEnforcer `Match` Function
+
+The `Match` function in the `PolicyEnforcer` class is designed to evaluate
+resources against a set of policies. It checks if the provided resource
+satisfies the conditions defined in any of the policies and returns a
+list of the matching policies.
+
+#### How it Works
+
+The `Match` function takes a resource as input and evaluates each policy's
+rules against that resource. Each policy contains a set of rules, and the
+resource is checked to see if it satisfies all the rules in a policy. If
+a resource satisfies all the rules in a policy, that policy is considered
+a match, and it is added to the list of matched policies.
+
+The `Match` function does not stop at the first match. It continues evaluating
+the resource against all available policies and returns all the matching
+policies.
+
+#### Usage Example
+
+Here is an example of how to use the `Match` function:
+
+```go
+// Define some policies
+policies := []Policy{
+    {
+        Name: "FinalizedPolicy",
+        Rules: []Rule{
+        {Field: "Finalized", Operator: "==", Value: true},
+    },
+    {
+        Name: "TypePolicy",
+        Rules: []Rule{
+        {Field: "Type", Operator: "==", Value: "asset"},
+    },
+}
+
+// Define a resource that will be evaluated against the policies
+resource := struct {
+    Age    int
+    Status string
+}{
+    Age:    30,
+    Status: "active",
+}
+
+// Create a PolicyEnforcer instance with the policies
+enforcer := PolicyEnforcer{
+    Policies: policies,
+}
+
+// Use the Match function to find matching policies
+matchedPolicies := enforcer.Match(resource)
+
+// Output the names of the matched policies
+for _, policy := range matchedPolicies {
+    fmt.Println("Matched policy:", policy.Name)
+}
+```
+
+### Explanation of the Example
+
+- The example defines two policies: one that checks if the Age of the
+resource is greater than 25, and another that checks if the Status is “active”.
+- The resource is an object with two fields: Age and Status.
+- The Match function evaluates the resource against the policies. Since
+both policies match the resource, their names are printed as output.
+
 ## ✅ Running Tests
 
 Run the following command to execute tests:
