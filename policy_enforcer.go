@@ -2,6 +2,7 @@ package go_policy_enforcer
 
 type PolicyEnforcerInterface interface {
 	Enforce(resource any) bool
+	Match(resource any) []*Policy
 }
 
 type PolicyEnforcer struct {
@@ -63,4 +64,28 @@ func (e PolicyEnforcer) Enforce(resource any) bool {
 		}
 	}
 	return true
+}
+
+// Match checks if a given resource matches any of the policies and returns a slice of matching policies.
+//
+// The function iterates over each policy in the PolicyEnforcer's policies slice.
+// For each policy, it calls the Evaluate method with the provided resource.
+// If the Evaluate method returns true, the policy is added to the result slice.
+//
+// Parameters:
+// - resource: The resource to be evaluated against the policies. The type can be any valid Go type.
+//
+// Returns:
+//   - []*Policy: A slice of pointers to policies that match the provided resource.
+//     If no policies match, an empty slice is returned.
+func (e PolicyEnforcer) Match(resource any) []*Policy {
+	var policies []*Policy
+
+	for _, p := range *e.Policies {
+		if p.Evaluate(resource) {
+			policies = append(policies, &p) // If the policy matches, append it
+		}
+	}
+
+	return policies
 }

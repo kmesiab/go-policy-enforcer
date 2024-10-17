@@ -120,8 +120,10 @@ func TestEvaluatePolicyCheckOperator(t *testing.T) {
 		{"==", "abc", "abc", true},
 		{"!=", 1, 2, true},
 		{">", 2, 1, true},
+		{">", "b", "a", true}, // String comparison
 		{">=", 2, 1, true},
 		{"<", 1, 2, true},
+		{"<", "a", "b", true}, // String comparison
 		{"<", 1, 1, false},
 	}
 
@@ -131,4 +133,299 @@ func TestEvaluatePolicyCheckOperator(t *testing.T) {
 			t.Errorf("EvaluatePolicyCheckOperator(%v, %v, %v) = %v; want %v", test.operator, test.leftVal, test.rightVal, result, test.expected)
 		}
 	}
+}
+
+func TestGetPolicyCheckOperator_NonExistingOperator(t *testing.T) {
+	nonExistingOperator := "non_existing_operator"
+	opFunc := GetPolicyCheckOperator(nonExistingOperator)
+
+	if opFunc != nil {
+		t.Errorf("Expected nil for operator '%s', but got %v", nonExistingOperator, opFunc)
+	}
+}
+
+func TestGetPolicyCheckOperator_CaseSensitivity(t *testing.T) {
+	operator := "=="
+	expectedOp := EqualsPolicyCheckOperator
+
+	opFunc := GetPolicyCheckOperator(operator)
+	if opFunc == nil {
+		t.Errorf("Expected non-nil function for operator '%s', but got nil", operator)
+	} else if !compareFunctions(opFunc, expectedOp) {
+		t.Errorf("Expected function behavior for operator '%s' does not match", operator)
+	}
+
+	operator = "!="
+	expectedOp = NotEqualsPolicyCheckOperator
+
+	opFunc = GetPolicyCheckOperator(operator)
+	if opFunc == nil {
+		t.Errorf("Expected non-nil function for operator '%s', but got nil", operator)
+	} else if !compareFunctions(opFunc, expectedOp) {
+		t.Errorf("Expected function behavior for operator '%s' does not match", operator)
+	}
+
+	operator = ">="
+	expectedOp = GreaterThanOrEqualsPolicyCheckOperator
+
+	opFunc = GetPolicyCheckOperator(operator)
+	if opFunc == nil {
+		t.Errorf("Expected non-nil function for operator '%s', but got nil", operator)
+	} else if !compareFunctions(opFunc, expectedOp) {
+		t.Errorf("Expected function behavior for operator '%s' does not match", operator)
+	}
+
+	operator = "in"
+	expectedOp = InPolicyCheckOperator
+
+	opFunc = GetPolicyCheckOperator(operator)
+	if opFunc == nil {
+		t.Errorf("Expected non-nil function for operator '%s', but got nil", operator)
+	} else if !compareFunctions(opFunc, expectedOp) {
+		t.Errorf("Expected function behavior for operator '%s' does not match", operator)
+	}
+
+	// Test case sensitivity
+	operator = "IN"
+	opFunc = GetPolicyCheckOperator(operator)
+	if opFunc != nil {
+		t.Errorf("Expected nil for operator '%s', but got non-nil", operator)
+	}
+}
+
+func TestEvaluatePolicyCheckOperator_NilValues(t *testing.T) {
+	operator := "=="
+
+	// Test case 1: leftVal is nil, rightVal is a non-nil string
+	var leftVal *string
+	rightVal := "abc"
+
+	result := EvaluatePolicyCheckOperator(operator, leftVal, rightVal)
+	if result {
+		t.Errorf("EvaluatePolicyCheckOperator(%s, nil, %v) = %v; want %v", operator, rightVal, result, false)
+	}
+
+	// Test case 2: leftVal is a non-nil string, rightVal is nil
+	leftValStr := "abc"
+	leftVal = &leftValStr
+	var rightValNil *string
+
+	result = EvaluatePolicyCheckOperator(operator, leftVal, rightValNil)
+	if result {
+		t.Errorf("EvaluatePolicyCheckOperator(%s, %v, nil) = %v; want %v", operator, leftValStr, result, false)
+	}
+
+	// Test case 3: both leftVal and rightVal are nil
+	leftVal = nil
+	rightValNil = nil
+
+	result = EvaluatePolicyCheckOperator(operator, leftVal, rightValNil)
+	if !result {
+		t.Errorf("EvaluatePolicyCheckOperator(%s, nil, nil) = %v; want %v", operator, result, true)
+	}
+}
+
+// TestNonNumericValues tests the behavior of the comparison operators with non-numeric values
+func TestNonNumericValues(t *testing.T) {
+	tests := []struct {
+		operator string
+		leftVal  any
+		rightVal any
+		expected bool
+	}{
+		{">", "abc", "xyz", false},
+		{">", "abc", "abc", false},
+		{">=", "abc", "xyz", false},
+		{">=", "abc", "abc", true},
+		{"<", "abc", "xyz", true},
+		{"<", "abc", "abc", false},
+		{"<=", "abc", "xyz", true},
+		{"<=", "abc", "abc", true},
+	}
+
+	for _, test := range tests {
+		result := EvaluatePolicyCheckOperator(test.operator, test.leftVal, test.rightVal)
+		if result != test.expected {
+			t.Errorf("EvaluatePolicyCheckOperator(%s, %v, %v) = %v; want %v", test.operator, test.leftVal, test.rightVal, result, test.expected)
+		}
+	}
+}
+
+func TestGetPolicyCheckOperator_NonStringValues(t *testing.T) {
+	tests := []struct {
+		operator string
+		leftVal  any
+		rightVal any
+		expected bool
+	}{
+		{"==", 1, 1, true},
+		{"==", 1.0, 1.0, true},
+		{"==", "1", 1, true},
+		{"==", "1.0", 1.0, true},
+		{"!=", 1, 2, true},
+		{"!=", 1.0, 2.0, true},
+		{"!=", "1", 2, true},
+		{"!=", "1.0", 2.0, true},
+	}
+
+	for _, test := range tests {
+		opFunc := GetPolicyCheckOperator(test.operator)
+		if opFunc == nil {
+			t.Errorf("Expected non-nil function for operator '%s', but got nil", test.operator)
+		} else {
+			result := opFunc(test.leftVal, test.rightVal)
+			if result != test.expected {
+				t.Errorf("GetPolicyCheckOperator(%s, %v, %v) = %v; want %v", test.operator, test.leftVal, test.rightVal, result, test.expected)
+			}
+		}
+	}
+}
+
+func TestEvaluatePolicyCheckOperator_UnsupportedOperator(t *testing.T) {
+	operator := "unsupported_operator"
+	leftVal := 10
+	rightVal := 20
+
+	result := EvaluatePolicyCheckOperator(operator, leftVal, rightVal)
+	if result {
+		t.Errorf("Expected EvaluatePolicyCheckOperator('%s', %v, %v) to return false for unsupported operator, but got true", operator, leftVal, rightVal)
+	}
+}
+
+func TestEvaluatePolicyCheckOperator_NonNumericValues(t *testing.T) {
+	tests := []struct {
+		operator string
+		leftVal  any
+		rightVal any
+		expected bool
+	}{
+		{">", "abc", "xyz", false},
+		{">", "abc", "abc", false},
+		{">=", "abc", "xyz", false},
+		{">=", "abc", "abc", true},
+		{"<", "abc", "xyz", true},
+		{"<", "abc", "abc", false},
+		{"<=", "abc", "xyz", true},
+		{"<=", "abc", "abc", true},
+	}
+
+	for _, test := range tests {
+		result := EvaluatePolicyCheckOperator(test.operator, test.leftVal, test.rightVal)
+		if result != test.expected {
+			t.Errorf("EvaluatePolicyCheckOperator(%s, %v, %v) = %v; want %v", test.operator, test.leftVal, test.rightVal, result, test.expected)
+		}
+	}
+}
+
+func TestEvaluatePolicyCheckOperator_DifferentDataTypes(t *testing.T) {
+	tests := []struct {
+		operator string
+		leftVal  any
+		rightVal any
+		expected bool
+	}{
+		{
+			operator: "==",
+			leftVal:  []string{"apple", "banana"},
+			rightVal: []string{"apple", "banana"},
+			expected: true,
+		},
+		{
+			operator: "==",
+			leftVal:  []string{"apple", "banana"},
+			rightVal: []string{"banana", "apple"},
+			expected: true,
+		},
+		{
+			operator: "==",
+			leftVal:  []string{"apple", "banana"},
+			rightVal: "banana",
+			expected: false,
+		},
+		{
+			operator: "===",
+			leftVal:  []string{"apple", "banana"},
+			rightVal: []string{"apple", "banana"},
+			expected: true,
+		},
+		{
+			operator: "===",
+			leftVal:  []string{"apple", "banana"},
+			rightVal: []string{"banana", "apple"},
+			expected: false,
+		},
+		{
+			operator: "!=",
+			leftVal:  []string{"apple", "banana"},
+			rightVal: []string{"apple", "banana"},
+			expected: false,
+		},
+		{
+			operator: "!=",
+			leftVal:  []string{"apple", "banana"},
+			rightVal: []string{"banana", "apple"},
+			expected: false,
+		},
+		{
+			operator: "!=",
+			leftVal:  []string{"apple", "banana"},
+			rightVal: "banana",
+			expected: true,
+		},
+		{
+			operator: "in",
+			leftVal:  "banana",
+			rightVal: []string{"apple", "banana"},
+			expected: true,
+		},
+		{
+			operator: "in",
+			leftVal:  "orange",
+			rightVal: []string{"apple", "banana"},
+			expected: false,
+		},
+	}
+
+	for _, test := range tests {
+		result := EvaluatePolicyCheckOperator(test.operator, test.leftVal, test.rightVal)
+		if result != test.expected {
+			t.Errorf("EvaluatePolicyCheckOperator(%s, %v, %v) = %v; want %v", test.operator, test.leftVal, test.rightVal, result, test.expected)
+		}
+	}
+}
+
+func TestEvaluatePolicyCheckOperator_SliceComparisons(t *testing.T) {
+
+	deepSlice := []string{"apple", "banana"}
+
+	tests := []struct {
+		operator string
+		leftVal  any
+		rightVal any
+		expected bool
+	}{
+		{"==", []string{"apple", "banana"}, "banana", false},                    // Not two slices
+		{"==", []string{"apple", "banana"}, []string{"apple", "banana"}, true},  // Same elements same order
+		{"==", []string{"apple"}, []string{"orange"}, false},                    // Not same elements
+		{"!=", []string{"apple", "banana"}, []string{"apple", "banana"}, false}, // Same elements same order (negative)
+		{"===", deepSlice, deepSlice, true},                                     // Deep equals
+		{"===", deepSlice, []string{"apple"}, false},                            // Deep equals not same positive match
+		{"!==", deepSlice, []string{"apple"}, true},                             // Deep equals not same (negative)_
+		{"in", "orange", []string{"apple", "banana"}, false},                    // Single not in slice
+	}
+
+	for _, test := range tests {
+		result := EvaluatePolicyCheckOperator(test.operator, test.leftVal, test.rightVal)
+		if result != test.expected {
+			t.Errorf("EvaluatePolicyCheckOperator(%v, %v, %v) = %v; want %v", test.operator, test.leftVal, test.rightVal, result, test.expected)
+		}
+	}
+}
+
+// Helper function to compare two functions by applying them on the same test data
+func compareFunctions(f1, f2 PolicyCheckOperator) bool {
+	// Test with sample values, adjust these according to the operator being tested
+	testValue1 := 10
+	testValue2 := 10
+	return f1(testValue1, testValue2) == f2(testValue1, testValue2)
 }

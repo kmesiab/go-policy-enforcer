@@ -15,13 +15,13 @@ filtering of data.
 
 ## ✨ Features
 
-- ⚡ **Dynamic Policy Enforcement**: Apply rules dynamically without 
+- ⚡ **Dynamic Policy Enforcement**: Apply rules dynamically without
 hardcoding logic.
-- 🔍 **Reflection-Based Field Access**: Leverages Go's reflection 
+- 🔍 **Reflection-Based Field Access**: Leverages Go's reflection
 to access and evaluate struct fields.
-- 🛠️ **Custom Operators**: Supports custom operators like 
+- 🛠️ **Custom Operators**: Supports custom operators like
 `==`, `!=`, `<`, `>`, and more.
-- 📦 **Extensible**: Easily add new rules and policies to 
+- 📦 **Extensible**: Easily add new rules and policies to
 adapt to your use case.
 
 ## 📚 Installation

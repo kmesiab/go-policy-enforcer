@@ -2,7 +2,7 @@
   "name": "IdRequiredPolicy",
   "rules": [
     {
-      "field": "id",
+      "field": "ID",
       "operator": ">",
       "value": 0
     }
