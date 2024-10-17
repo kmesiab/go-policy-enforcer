@@ -48,4 +48,4 @@ jobs:
       - name: 🕵️‍♂️ Run GolangCI-Lint
         uses: golangci/golangci-lint-action@v3
         with:
-          version: v1.54
+          version: v1.61.0

@@ -22,8 +22,8 @@ func main() {
 	}
 
 	// Create assets to test enforcement
-	allowedAsset := &Asset{ID: "1", Type: "asset", Finalized: true}
-	deniedAsset := &Asset{ID: "1", Type: "asset", Finalized: false}
+	allowedAsset := &Asset{ID: 1, Type: "asset", Finalized: true}
+	deniedAsset := &Asset{ID: 2, Type: "asset", Finalized: false}
 	assetList := []*Asset{allowedAsset, deniedAsset}
 
 	// Create a PolicyEnforcer instance with the policies

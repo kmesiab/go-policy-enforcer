@@ -2,8 +2,8 @@
   "name": "FinalizedPolicy",
   "rules": [
     {
-      "field": "finalized",
-      "operator": "eq",
+      "field": "Finalized",
+      "operator": "==",
       "value": true
     }
   ]
