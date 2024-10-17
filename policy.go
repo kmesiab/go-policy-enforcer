@@ -57,7 +57,14 @@ func (p *Policy) Evaluate(resource any) bool {
 				for i := 0; i < fieldValue.Len(); i++ {
 					elem := fieldValue.Index(i).Interface()
 					for _, nestedRule := range nestedRules {
-						if EvaluatePolicyCheckOperator(nestedRule.Operator, reflect.ValueOf(elem).FieldByName(nestedRule.Field).Interface(), nestedRule.Value) {
+
+						// Perform the pattern match
+						if EvaluatePolicyCheckOperator(
+							nestedRule.Operator,
+							reflect.ValueOf(elem).FieldByName(nestedRule.Field).Interface(),
+							nestedRule.Value,
+						) {
+
 							matched = true
 							break
 						}
