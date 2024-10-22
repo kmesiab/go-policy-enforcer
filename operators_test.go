@@ -1,6 +1,7 @@
 package go_policy_enforcer
 
 import (
+	"reflect"
 	"testing"
 )
 
@@ -318,6 +319,9 @@ func TestEvaluatePolicyCheckOperator_NonNumericValues(t *testing.T) {
 }
 
 func TestEvaluatePolicyCheckOperator_DifferentDataTypes(t *testing.T) {
+
+	sameSlice := []string{"abc", "xyz"}
+
 	tests := []struct {
 		operator string
 		leftVal  any
@@ -345,14 +349,13 @@ func TestEvaluatePolicyCheckOperator_DifferentDataTypes(t *testing.T) {
 		{
 			operator: "===",
 			leftVal:  []string{"apple", "banana"},
-			rightVal: []string{"apple", "banana"},
-			expected: true,
-		},
-		{
+			rightVal: []string{"banana", "apple"},
+			expected: false,
+		}, {
 			operator: "===",
-			leftVal:  []string{"apple", "banana"},
-			rightVal: []string{"banana", "apple"},
-			expected: false,
+			leftVal:  sameSlice,
+			rightVal: sameSlice,
+			expected: true,
 		},
 		{
 			operator: "!=",
@@ -369,8 +372,8 @@ func TestEvaluatePolicyCheckOperator_DifferentDataTypes(t *testing.T) {
 		{
 			operator: "!=",
 			leftVal:  []string{"apple", "banana"},
-			rightVal: "banana",
-			expected: true,
+			rightVal: "bananas",
+			expected: false,
 		},
 		{
 			operator: "in",
@@ -418,6 +421,110 @@ func TestEvaluatePolicyCheckOperator_SliceComparisons(t *testing.T) {
 		result := EvaluatePolicyCheckOperator(test.operator, test.leftVal, test.rightVal)
 		if result != test.expected {
 			t.Errorf("EvaluatePolicyCheckOperator(%v, %v, %v) = %v; want %v", test.operator, test.leftVal, test.rightVal, result, test.expected)
+		}
+	}
+}
+
+func TestToStringSlice_NonNumericStringValues(t *testing.T) {
+	// Test case: non-numeric string values in 'in' operator
+	input := []interface{}{
+		"apple",
+		123,
+		"banana",
+		true,
+		[]int{4, 5, 6},
+	}
+
+	expected := []string{"apple", "123", "banana", "true", "[4 5 6]"}
+
+	result, ok := toStringSlice(input)
+
+	if !ok {
+		t.Errorf("Expected toStringSlice to return true, but got false")
+	}
+
+	if len(result) != len(expected) {
+		t.Errorf("Expected result length %d, but got %d", len(expected), len(result))
+	}
+
+	for i := range result {
+		if result[i] != expected[i] {
+			t.Errorf("Expected result[%d] = %s, but got %s", i, expected[i], result[i])
+		}
+	}
+}
+
+func TestToStringSlice_EmptySlice(t *testing.T) {
+	emptySlice := make([]interface{}, 0)
+	expectedResult := []string{}
+
+	result, ok := toStringSlice(emptySlice)
+
+	if !ok {
+		t.Errorf("Expected toStringSlice to return true, but got false")
+	}
+
+	if len(result) != len(expectedResult) {
+		t.Errorf("Expected result length %d, but got %d", len(expectedResult), len(result))
+	}
+
+	for i := range result {
+		if result[i] != expectedResult[i] {
+			t.Errorf("Expected result[%d] = %s, but got %s", i, expectedResult[i], result[i])
+		}
+	}
+}
+
+func TestToStringSlice_DifferentDataTypes(t *testing.T) {
+
+	tests := []struct {
+		input    any
+		expected []string
+		isSlice  bool
+	}{
+		{
+			input:    []int{1, 2, 3},
+			expected: []string{"1", "2", "3"},
+			isSlice:  true,
+		},
+		{
+			input:    []float64{1.1, 2.2, 3.3},
+			expected: []string{"1.1", "2.2", "3.3"},
+			isSlice:  true,
+		},
+		{
+			input:    []bool{true, false, true},
+			expected: []string{"true", "false", "true"},
+			isSlice:  true,
+		},
+		{
+			input:    []interface{}{1, 2.2, "three", true},
+			expected: []string{"1", "2.2", "three", "true"},
+			isSlice:  true,
+		},
+		{
+			input:    123,
+			expected: nil,
+			isSlice:  false,
+		},
+		{
+			input:    "hello",
+			expected: nil,
+			isSlice:  false,
+		},
+	}
+
+	for _, test := range tests {
+		result, isSlice := toStringSlice(test.input)
+
+		if isSlice != test.isSlice {
+			t.Errorf("Expected isSlice to be %v, but got %v for input %v", test.isSlice, isSlice, test.input)
+		}
+
+		if isSlice {
+			if !reflect.DeepEqual(result, test.expected) {
+				t.Errorf("Expected %v, but got %v for input %v", test.expected, result, test.input)
+			}
 		}
 	}
 }

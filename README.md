@@ -87,14 +87,19 @@ if enforcer.Enforce(resource) {
 }
 ```
 
-### PolicyEnforcer `Match` Function
+### Learn More About Policy Files
+
+For more information about creating policy JSON files and understanding
+operators in go-policy-enforcer, refer to the POLICIES.md file.
+
+## PolicyEnforcer `Match` Function
 
 The `Match` function in the `PolicyEnforcer` class is designed to evaluate
 resources against a set of policies. It checks if the provided resource
 satisfies the conditions defined in any of the policies and returns a
 list of the matching policies.
 
-#### How it Works
+### How it Works
 
 The `Match` function takes a resource as input and evaluates each policy's
 rules against that resource. Each policy contains a set of rules, and the
