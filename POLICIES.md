@@ -4,6 +4,7 @@
 
 - [Policy JSON File Structure](#policy-json-file-structure)
 - [Policy Operators](#policy-operators)
+- [Handling Nested Values](#handling-nested-values)
 
 ## Policy JSON File Structure
 
@@ -31,7 +32,8 @@ Policy JSON files should follow the following structure:
 - `name`: The name of the policy.
 - `rules`: An array of rules that define the conditions for enforcing the
   policy.
-- - `field`: The name of the field to compare.
+- - `field`: The name of the field to compare. Nested fields can be accessed
+using dot notation (e.g., `address.city`).
 - - `operator`: The operator to use for comparison.
 - - `value`: The value to compare against.
 
@@ -48,51 +50,34 @@ The library supports the following policy operators:
 - `in`: Check if a value is present in a slice.
 - `not in`: Check if a value is not present in a slice.
 
-When evaluating a policy, the library compares the value of the specified
-field with the provided value using the specified operator. If the comparison
-is true, the policy is enforced; otherwise, it is not enforced.
+## Handling Nested Values
 
-For example, consider the following policy rule:
+To access nested values in the policy rules, use dot notation in the `field`
+property. For example, if you have a JSON structure like this:
 
 ```json
 {
-  "field": "age",
-  "operator": ">",
-  "value": 18
+  "name": "John Doe",
+  "address": {
+    "city": "New York",
+    "state": "NY"
+  }
 }
 ```
 
-In this case, the policy will be enforced if the `age` field of the asset
-is greater than 18.
+You can create a policy rule to check if the `city` field is equal to
+"New York" like this:
 
-To enforce a policy on an asset, you can use the `Enforce` method of
-the `PolicyEnforcer` struct. The method takes an asset as input and
-returns a boolean value indicating whether the policy is enforced or not.
-
-Here's an example of how to enforce a policy on an asset:
-
-```go
-func main() {
-   // Load a policy from a JSON file
-   policy, err := gopolicyenforcer.LoadPolicy("path/to/policy.json")
-   if err != nil {
-      log.Fatalf("Error loading policy: %v", err)
-   }
-
-   // Create an asset to test enforcement
-   asset := &Asset{ID: 1, Name: "John Doe", Age: 25}
-
-   // Create a PolicyEnforcer instance with the policy
-   e := gopolicyenforcer.NewPolicyEnforcer(policy)
-
-   // Enforce the policy on the asset and print the result
-   if e.Enforce(asset) {
-      fmt.Println("Policy is enforced")
-   } else {
-      fmt.Println("Policy is not enforced")
-   }
+```json
+{
+  "field": "address.city",
+  "operator": "==",
+  "value": "New York"
 }
 ```
 
-In this example, the policy will be enforced because the `age` field
-of the asset is greater than 18.
+In this case, the policy will be enforced if the `city` field of the nested
+`address` object is equal to "New York".
+
+Remember to update the policy JSON file accordingly when using nested values
+in your rules.
