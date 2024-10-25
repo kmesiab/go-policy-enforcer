@@ -65,7 +65,7 @@ func TestLoadPolicy_HappyPath(t *testing.T) {
 	mockPolicyData, _ := json.Marshal(mockPolicy)
 	mockPolicyFile := "test_policy.json"
 
-	if err := os.WriteFile(mockPolicyFile, mockPolicyData, 0644); err != nil {
+	if err := os.WriteFile(mockPolicyFile, mockPolicyData, 0o644); err != nil {
 		t.Fatalf("failed to create mock policy file: %v", err)
 	}
 
@@ -98,7 +98,7 @@ func TestLoadPolicy_FileNotFound(t *testing.T) {
 func TestLoadPolicy_InvalidJSON(t *testing.T) {
 	// Create a mock invalid policy file
 	invalidPolicyFile := "invalid_policy.json"
-	if err := os.WriteFile(invalidPolicyFile, []byte(`invalid-json`), 0644); err != nil {
+	if err := os.WriteFile(invalidPolicyFile, []byte(`invalid-json`), 0o644); err != nil {
 		t.Fatalf("failed to create mock invalid policy file: %v", err)
 	}
 

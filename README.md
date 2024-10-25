@@ -90,7 +90,14 @@ if enforcer.Enforce(resource) {
 ### Learn More About Policy Files
 
 For more information about creating policy JSON files and understanding
-operators in go-policy-enforcer, refer to the POLICIES.md file.
+operators in go-policy-enforcer, refer to the [POLICIES.md](POLICIES.md) file.
+
+### Learn More About Policy Operators
+
+For more information about the operators used in the go-policy-enforcer library,
+refer to the [OPERATORS.md](OPERATORS.md) file.
+
+---
 
 ## PolicyEnforcer `Match` Function
 
@@ -140,9 +147,7 @@ resource := struct {
 }
 
 // Create a PolicyEnforcer instance with the policies
-enforcer := PolicyEnforcer{
-    Policies: policies,
-}
+enforcer := NewPolicyEnforcer(&policies)
 
 // Use the Match function to find matching policies
 matchedPolicies := enforcer.Match(resource)
@@ -153,6 +158,21 @@ for _, policy := range matchedPolicies {
 }
 ```
 
+## Handling Nested and Complex Structs
+
+The `go-policy-enforcer` library is designed to handle nested and complex
+struct types seamlessly through the use of reflection and dot notation for
+field access.
+
+This means you can enforce policies not only on simple flat
+structs but also on deeply nested structs. By specifying fields using dot
+notation, such as `address.city`, you can perform evaluations on nested
+fields within your data structures.
+
+This powerful feature allows the library to accommodate complex data
+hierarchies and intricate JSON structures, ensuring that your policies
+can be as detailed and comprehensive as needed.
+
 ### Explanation of the Example
 
 - The example defines two policies: one that checks if the Age of the
@@ -161,6 +181,8 @@ resource is greater than 25, and another that checks if the Status is “active�
 - The Match function evaluates the resource against the policies. Since
 both policies match the resource, their names are printed as output.
 
+---
+
 ## ✅ Running Tests
 
 Run the following command to execute tests:
@@ -168,6 +190,25 @@ Run the following command to execute tests:
 ```bash
 go test ./...
 ```
+
+---
+
+## 🤝 Contributors
+
+We appreciate the contributions from the community that help to make
+`go-policy-enforcer` better. If you would like to contribute, please
+feel free to fork the repository and submit a pull request.
+
+### How to Contribute
+
+1. **Fork the Repository**: Click the "Fork" button in the top-right corner
+of the GitHub page.
+2. **Clone Your Fork**: Clone your forked repository to your local machine.
+
+   ```bash
+   git clone https://github.com/your-username/go-policy-enforcer.git
+
+---
 
 ## 📝 License
 

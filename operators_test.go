@@ -3,6 +3,8 @@ package go_policy_enforcer
 import (
 	"reflect"
 	"testing"
+
+	"github.com/kmesiab/go-policy-enforcer/internal/utils"
 )
 
 // TestEqualsPolicyCheckOperator tests the EqualsPolicyCheckOperator
@@ -319,7 +321,6 @@ func TestEvaluatePolicyCheckOperator_NonNumericValues(t *testing.T) {
 }
 
 func TestEvaluatePolicyCheckOperator_DifferentDataTypes(t *testing.T) {
-
 	sameSlice := []string{"abc", "xyz"}
 
 	tests := []struct {
@@ -351,7 +352,8 @@ func TestEvaluatePolicyCheckOperator_DifferentDataTypes(t *testing.T) {
 			leftVal:  []string{"apple", "banana"},
 			rightVal: []string{"banana", "apple"},
 			expected: false,
-		}, {
+		},
+		{
 			operator: "===",
 			leftVal:  sameSlice,
 			rightVal: sameSlice,
@@ -398,7 +400,6 @@ func TestEvaluatePolicyCheckOperator_DifferentDataTypes(t *testing.T) {
 }
 
 func TestEvaluatePolicyCheckOperator_SliceComparisons(t *testing.T) {
-
 	deepSlice := []string{"apple", "banana"}
 
 	tests := []struct {
@@ -437,7 +438,7 @@ func TestToStringSlice_NonNumericStringValues(t *testing.T) {
 
 	expected := []string{"apple", "123", "banana", "true", "[4 5 6]"}
 
-	result, ok := toStringSlice(input)
+	result, ok := utils.ToStringSlice(input)
 
 	if !ok {
 		t.Errorf("Expected toStringSlice to return true, but got false")
@@ -458,7 +459,7 @@ func TestToStringSlice_EmptySlice(t *testing.T) {
 	emptySlice := make([]interface{}, 0)
 	expectedResult := []string{}
 
-	result, ok := toStringSlice(emptySlice)
+	result, ok := utils.ToStringSlice(emptySlice)
 
 	if !ok {
 		t.Errorf("Expected toStringSlice to return true, but got false")
@@ -476,7 +477,6 @@ func TestToStringSlice_EmptySlice(t *testing.T) {
 }
 
 func TestToStringSlice_DifferentDataTypes(t *testing.T) {
-
 	tests := []struct {
 		input    any
 		expected []string
@@ -515,7 +515,7 @@ func TestToStringSlice_DifferentDataTypes(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		result, isSlice := toStringSlice(test.input)
+		result, isSlice := utils.ToStringSlice(test.input)
 
 		if isSlice != test.isSlice {
 			t.Errorf("Expected isSlice to be %v, but got %v for input %v", test.isSlice, isSlice, test.input)
