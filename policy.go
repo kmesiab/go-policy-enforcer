@@ -57,7 +57,6 @@ func (p *Policy) Evaluate(resource any) bool {
 				for i := 0; i < fieldValue.Len(); i++ {
 					elem := fieldValue.Index(i).Interface()
 					for _, nestedRule := range nestedRules {
-
 						// Perform the pattern match
 						if EvaluatePolicyCheckOperator(
 							nestedRule.Operator,
@@ -181,4 +180,14 @@ func LoadPolicy(policyFile string) (*Policy, error) {
 	}
 
 	return policy, nil
+}
+
+// GetPolicyCheckOperator retrieves the appropriate PolicyCheckOperator function
+// based on the provided operator string.
+func GetPolicyCheckOperator(operator string) PolicyCheckOperator {
+	if op, exists := PolicyCheckOperatorMap[operator]; exists {
+		return op
+	}
+	// Return nil if the operator doesn't exist
+	return nil
 }

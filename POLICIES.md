@@ -39,6 +39,9 @@ using dot notation (e.g., `address.city`).
 
 ## Policy Operators
 
+️ℹ️See the [POLICIES.md](POLICIES.md) file for a detailed explanation of
+the operators used in the go-policy-enforcer library.
+
 The library supports the following policy operators:
 
 - `==`: Equal to.
