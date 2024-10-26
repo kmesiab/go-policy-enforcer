@@ -58,7 +58,7 @@ func (p *Policy) Evaluate(resource any) bool {
 					elem := fieldValue.Index(i).Interface()
 					for _, nestedRule := range nestedRules {
 						// Perform the pattern match
-						if EvaluatePolicyCheckOperator(
+						if evaluatePolicyCheckOperator(
 							nestedRule.Operator,
 							reflect.ValueOf(elem).FieldByName(nestedRule.Field).Interface(),
 							nestedRule.Value,
@@ -91,7 +91,7 @@ func (p *Policy) Evaluate(resource any) bool {
 			return false
 		}
 
-		if !EvaluatePolicyCheckOperator(rule.Operator, fieldValue.Interface(), rule.Value) {
+		if !evaluatePolicyCheckOperator(rule.Operator, fieldValue.Interface(), rule.Value) {
 			return false
 		}
 	}
@@ -162,6 +162,15 @@ func getNestedField(v reflect.Value, fieldPath string) (reflect.Value, error) {
 	return v, nil
 }
 
+// LoadPolicy reads a policy from a JSON file and returns a Policy struct.
+// If the file cannot be read or the JSON is invalid, an error is returned.
+//
+// Parameters:
+// - policyFile: A string representing the path to the policy JSON file.
+//
+// Return:
+// - *Policy: A pointer to a Policy struct representing the loaded policy.
+// - error: An error if the file cannot be read or the JSON is invalid.
 func LoadPolicy(policyFile string) (*Policy, error) {
 	var (
 		err          error
@@ -182,12 +191,19 @@ func LoadPolicy(policyFile string) (*Policy, error) {
 	return policy, nil
 }
 
-// GetPolicyCheckOperator retrieves the appropriate PolicyCheckOperator function
-// based on the provided operator string.
-func GetPolicyCheckOperator(operator string) PolicyCheckOperator {
-	if op, exists := PolicyCheckOperatorMap[operator]; exists {
-		return op
+// getPolicyCheckOperator retrieves a PolicyCheckOperator function based on the given operator string.
+// It uses a map of predefined operators to find the corresponding function.
+//
+// Parameters:
+// - operator: A string representing the operator to retrieve the function for.
+//
+// Return:
+// - PolicyCheckOperator[any]: A function that performs the policy check operation.
+// - error: An error if the operator does not exist in the predefined map.
+func getPolicyCheckOperator(operator string) (PolicyCheckOperator[any], error) {
+	if fn, ok := policyCheckOperatorMap[operator]; ok {
+		return fn, nil
 	}
-	// Return nil if the operator doesn't exist
-	return nil
+
+	return nil, fmt.Errorf("operator %s does not exist", operator)
 }
