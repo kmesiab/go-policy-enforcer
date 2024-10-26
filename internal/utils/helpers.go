@@ -103,21 +103,25 @@ func ToStringSlice(val any) ([]string, bool) {
 //   - bool: Indicates success (true) if all elements were successfully converted
 //     to type T; false otherwise.
 func TryConvertGenericSoTypedSlice[T any](val any) ([]T, bool) {
-	// Check if the input value is a slice of type T
-	if reflect.TypeOf(val).Kind() == reflect.Slice {
-
-		// Convert the input value to a slice of type T
-		slice := make([]T, reflect.ValueOf(val).Len())
-
-		// Iterate over each element in the slice and convert it to type T
-		for i := 0; i < reflect.ValueOf(val).Len(); i++ {
-			slice[i] = reflect.ValueOf(val).Index(i).Interface().(T)
-		}
-
-		return slice, true
+	// Check if the input value is actually a slice and if it's nil
+	v := reflect.ValueOf(val)
+	if v.Kind() != reflect.Slice || !v.IsValid() || v.IsNil() {
+		return nil, false
 	}
 
-	return nil, false
+	// Initialize a slice of type T with the same length as the input slice
+	slice := make([]T, v.Len())
+
+	// Attempt to convert each element in the slice to type T
+	for i := 0; i < v.Len(); i++ {
+		elem, ok := v.Index(i).Interface().(T)
+		if !ok {
+			return nil, false // Element is not of type T, so conversion fails
+		}
+		slice[i] = elem
+	}
+
+	return slice, true
 }
 
 // ToMap converts any value to a map for comparison.
@@ -165,10 +169,14 @@ func ToMap(val any) (map[string]interface{}, bool) {
 // - The original value if the input value is not a pointer or is nil.
 func DereferencePointer(val any) any {
 	v := reflect.ValueOf(val)
-	if v.Kind() == reflect.Ptr && !v.IsNil() {
-		return v.Elem().Interface()
+
+	// Handle pointers to interfaces safely
+	for v.Kind() == reflect.Ptr && !v.IsNil() {
+		v = v.Elem()
 	}
-	return val
+
+	// Return final dereferenced value
+	return v.Interface()
 }
 
 // CoerceToComparable  takes a value of any type and attempts to coerce it into a comparable type.
@@ -197,4 +205,23 @@ func CoerceToComparable(val any) any {
 		// If it's any other type, return it as-is
 		return fmt.Sprintf("%v", v) // convert other types to string for comparison
 	}
+}
+
+// Len is a generic function that calculates the length of a given value.
+// It supports arrays, slices, strings, and maps. For other types, it returns 0.
+//
+// Parameters:
+// - value: The input value of any type.
+//
+// Returns:
+// - int: The length of the input value. If the input value is not an array, slice, string, or map,
+//   the function returns 0.
+func Len[T any](value T) int {
+    v := reflect.ValueOf(value)
+    switch v.Kind() {
+    case reflect.Array, reflect.Slice, reflect.String, reflect.Map:
+        return v.Len()
+    default:
+        return 0
+    }
 }

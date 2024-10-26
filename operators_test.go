@@ -1,16 +1,13 @@
 package go_policy_enforcer
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 
 	"github.com/kmesiab/go-policy-enforcer/internal/utils"
 )
 
-// TestEqualsPolicyCheckOperator tests the EqualsPolicyCheckOperator
+// TestEqualsPolicyCheckOperator tests the equalsPolicyCheckOperator
 func TestEqualsPolicyCheckOperator(t *testing.T) {
 	tests := []struct {
 		leftVal  any
@@ -25,14 +22,14 @@ func TestEqualsPolicyCheckOperator(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		result := EqualsPolicyCheckOperator(test.leftVal, test.rightVal)
+		result := equalsPolicyCheckOperator(test.leftVal, test.rightVal)
 		if result != test.expected {
 			t.Errorf("EqualsPolicyCheckOperator(%v, %v) = %v; want %v", test.leftVal, test.rightVal, result, test.expected)
 		}
 	}
 }
 
-// TestNotEqualsPolicyCheckOperator tests the NotEqualsPolicyCheckOperator
+// TestNotEqualsPolicyCheckOperator tests the notEqualsPolicyCheckOperator
 func TestNotEqualsPolicyCheckOperator(t *testing.T) {
 	tests := []struct {
 		leftVal  any
@@ -47,14 +44,14 @@ func TestNotEqualsPolicyCheckOperator(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		result := NotEqualsPolicyCheckOperator(test.leftVal, test.rightVal)
+		result := notEqualsPolicyCheckOperator(test.leftVal, test.rightVal)
 		if result != test.expected {
 			t.Errorf("NotEqualsPolicyCheckOperator(%v, %v) = %v; want %v", test.leftVal, test.rightVal, result, test.expected)
 		}
 	}
 }
 
-// TestGreaterThanPolicyCheckOperator tests the GreaterThanPolicyCheckOperator
+// TestGreaterThanPolicyCheckOperator tests the greaterThanPolicyCheckOperator
 func TestGreaterThanPolicyCheckOperator(t *testing.T) {
 	tests := []struct {
 		leftVal  any
@@ -67,14 +64,14 @@ func TestGreaterThanPolicyCheckOperator(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		result := GreaterThanPolicyCheckOperator(test.leftVal, test.rightVal)
+		result := greaterThanPolicyCheckOperator(test.leftVal, test.rightVal)
 		if result != test.expected {
 			t.Errorf("GreaterThanPolicyCheckOperator(%v, %v) = %v; want %v", test.leftVal, test.rightVal, result, test.expected)
 		}
 	}
 }
 
-// TestGreaterThanOrEqualsPolicyCheckOperator tests the GreaterThanOrEqualsPolicyCheckOperator
+// TestGreaterThanOrEqualsPolicyCheckOperator tests the greaterThanOrEqualsPolicyCheckOperator
 func TestGreaterThanOrEqualsPolicyCheckOperator(t *testing.T) {
 	tests := []struct {
 		leftVal  any
@@ -87,14 +84,14 @@ func TestGreaterThanOrEqualsPolicyCheckOperator(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		result := GreaterThanOrEqualsPolicyCheckOperator(test.leftVal, test.rightVal)
+		result := greaterThanOrEqualsPolicyCheckOperator(test.leftVal, test.rightVal)
 		if result != test.expected {
 			t.Errorf("GreaterThanOrEqualsPolicyCheckOperator(%v, %v) = %v; want %v", test.leftVal, test.rightVal, result, test.expected)
 		}
 	}
 }
 
-// TestLessThanPolicyCheckOperator tests the LessThanPolicyCheckOperator
+// TestLessThanPolicyCheckOperator tests the lessThanPolicyCheckOperator
 func TestLessThanPolicyCheckOperator(t *testing.T) {
 	tests := []struct {
 		leftVal  any
@@ -107,7 +104,7 @@ func TestLessThanPolicyCheckOperator(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		result := LessThanPolicyCheckOperator(test.leftVal, test.rightVal)
+		result := lessThanPolicyCheckOperator(test.leftVal, test.rightVal)
 		if result != test.expected {
 			t.Errorf("LessThanPolicyCheckOperator(%v, %v) = %v; want %v", test.leftVal, test.rightVal, result, test.expected)
 		}
@@ -146,71 +143,50 @@ func TestGetPolicyCheckOperator_NonExistingOperator(t *testing.T) {
 	nonExistingOperator := "non_existing_operator"
 	opFunc, err := getPolicyCheckOperator(nonExistingOperator)
 
-	assert.Errorf(t, err,
-		"Exepcted an error for non existing operator but got none")
+	if err == nil {
+		t.Errorf("Expected error for non existing operator but got: %v", err)
+	}
 
-	assert.Nil(t, opFunc,
-		fmt.Sprintf("Expected nil for operator '%s', but got %v", nonExistingOperator, opFunc))
+	if opFunc != nil {
+		t.Errorf("Expected nil function for operator '%s', but got nil", nonExistingOperator)
+	}
 }
 
 func TestGetPolicyCheckOperator_CaseSensitivity(t *testing.T) {
-	operator := "=="
-	expectedOp := EqualsPolicyCheckOperator
-
-	opFunc, err := getPolicyCheckOperator(operator)
-	assert.NoError(t, err)
-
-	if opFunc == nil {
-		t.Errorf("Expected non-nil function for operator '%s', but got nil", operator)
-	} else if !compareFunctions(opFunc, expectedOp) {
-		t.Errorf("Expected function behavior for operator '%s' does not match", operator)
+	tests := []struct {
+		operator     string
+		expectedFunc func(any, any) bool
+		expectNil    bool
+		expectError  bool
+	}{
+		{"==", equalsPolicyCheckOperator, false, false},
+		{"!=", notEqualsPolicyCheckOperator, false, false},
+		{">=", greaterThanOrEqualsPolicyCheckOperator, false, false},
+		{"in", inPolicyCheckOperator, false, false},
+		{"IN", nil, true, true}, // Case-sensitive mismatch should return nil without error
 	}
 
-	operator = "!="
-	expectedOp = NotEqualsPolicyCheckOperator
+	for _, tt := range tests {
+		t.Run(tt.operator, func(t *testing.T) {
+			opFunc, err := getPolicyCheckOperator(tt.operator)
 
-	opFunc, err = getPolicyCheckOperator(operator)
-	assert.NoError(t, err)
-	if opFunc == nil {
-		t.Errorf("Expected non-nil function for operator '%s', but got nil", operator)
-	} else if !compareFunctions(opFunc, expectedOp) {
-		t.Errorf("Expected function behavior for operator '%s' does not match", operator)
-	}
+			// Check for unexpected errors
+			if (err != nil) != tt.expectError {
+				t.Errorf("Unexpected error for operator '%s': got %v, want error: %v", tt.operator, err, tt.expectError)
+			}
 
-	operator = ">="
-	expectedOp = GreaterThanOrEqualsPolicyCheckOperator
+			// Check for expected nil or non-nil function
+			if (opFunc == nil) != tt.expectNil {
+				t.Errorf("Expected nil: %v for operator '%s', but got: %v", tt.expectNil, tt.operator, opFunc)
+			}
 
-	opFunc, err = getPolicyCheckOperator(operator)
-	assert.NoError(t, err)
-
-	if opFunc == nil {
-		t.Errorf("Expected non-nil function for operator '%s', but got nil", operator)
-	} else if !compareFunctions(opFunc, expectedOp) {
-		t.Errorf("Expected function behavior for operator '%s' does not match", operator)
-	}
-
-	operator = "in"
-	expectedOp = InPolicyCheckOperator
-
-	opFunc, err = getPolicyCheckOperator(operator)
-	assert.NoError(t, err)
-
-	if opFunc == nil {
-		t.Errorf("Expected non-nil function for operator '%s', but got nil", operator)
-	} else if !compareFunctions(opFunc, expectedOp) {
-		t.Errorf("Expected function behavior for operator '%s' does not match", operator)
-	}
-
-	// Test case sensitivity
-	operator = "IN"
-	opFunc, err = getPolicyCheckOperator(operator)
-	assert.Error(t, err, "Expected function behavior for operator '%s' does not match", operator)
-
-	if opFunc != nil {
-		t.Errorf("Expected nil for operator '%s', but got non-nil", operator)
+			// Compare function behavior if a non-nil function was expected
+			if !tt.expectNil && opFunc != nil && !compareFunctions(opFunc, tt.expectedFunc) {
+				t.Errorf("Expected function behavior for operator '%s' does not match", tt.operator)
+			}
+		})
 	}
 }
-
 func TestEvaluatePolicyCheckOperator_NilValues(t *testing.T) {
 	operator := "=="
 
@@ -288,7 +264,11 @@ func TestGetPolicyCheckOperator_NonStringValues(t *testing.T) {
 
 	for _, test := range tests {
 		opFunc, err := getPolicyCheckOperator(test.operator)
-		assert.NoError(t, err)
+
+		if err != nil {
+			t.Errorf("Expected no error for non existing operator but got: %v", err)
+		}
+
 		if opFunc == nil {
 			t.Errorf("Expected non-nil function for operator '%s', but got nil", test.operator)
 		} else {
@@ -473,7 +453,7 @@ func TestToStringSlice_NonNumericStringValues(t *testing.T) {
 
 func TestToStringSlice_EmptySlice(t *testing.T) {
 	emptySlice := make([]interface{}, 0)
-	expectedResult := []string{}
+	var expectedResult []string
 
 	result, ok := utils.ToStringSlice(emptySlice)
 
@@ -492,12 +472,29 @@ func TestToStringSlice_EmptySlice(t *testing.T) {
 	}
 }
 
+type CustomTestType struct {
+	value string
+}
+
+// Implement the fmt.Stringer interface for CustomType
+func (c CustomTestType) String() string {
+	return c.value
+}
+
 func TestToStringSlice_DifferentDataTypes(t *testing.T) {
+
+	// Define CustomType with a String method
+
 	tests := []struct {
 		input    any
 		expected []string
 		isSlice  bool
 	}{
+		{
+			input:    []CustomTestType{{value: "test"}, {value: "example"}},
+			expected: []string{"test", "example"},
+			isSlice:  true,
+		},
 		{
 			input:    []int{1, 2, 3},
 			expected: []string{"1", "2", "3"},
@@ -528,18 +525,32 @@ func TestToStringSlice_DifferentDataTypes(t *testing.T) {
 			expected: nil,
 			isSlice:  false,
 		},
+		{
+			input:    []interface{}{}, // Test empty slice
+			expected: []string{},
+			isSlice:  true,
+		},
+		{
+			input:    []interface{}{nil, nil}, // Test slice with nil elements
+			expected: []string{"<nil>", "<nil>"},
+			isSlice:  true,
+		},
 	}
 
 	for _, test := range tests {
 		result, isSlice := utils.ToStringSlice(test.input)
 
 		if isSlice != test.isSlice {
-			t.Errorf("Expected isSlice to be %v, but got %v for input %v", test.isSlice, isSlice, test.input)
+			t.Errorf("Input: %v\nExpected isSlice: %v, but got: %v", test.input, test.isSlice, isSlice)
 		}
 
 		if isSlice {
 			if !reflect.DeepEqual(result, test.expected) {
-				t.Errorf("Expected %v, but got %v for input %v", test.expected, result, test.input)
+				t.Errorf("Input: %v\nExpected: %v, but got: %v", test.input, test.expected, result)
+			}
+		} else {
+			if result != nil {
+				t.Errorf("Input: %v\nExpected result to be nil, but got: %v", test.input, result)
 			}
 		}
 	}

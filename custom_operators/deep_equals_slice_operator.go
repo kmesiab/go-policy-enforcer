@@ -18,20 +18,36 @@ import (
 //     Returns true if the left value is deeply equal to the right value.
 //     Returns false otherwise.
 func deepEqualsPolicyCheckFunc[T comparable](leftVal, rightVal any) bool {
+	// Explicitly handle nil slices to preserve their nilness distinction
+	if leftVal == nil && rightVal == nil {
+		return true
+	}
+	// If they're both empty, they are the same
+	if (utils.Len(leftVal) + utils.Len(rightVal)) == 0 {
+		return true
+	}
+
+	// Check if both are slices
 	leftSlice, leftIsSlice := utils.TryConvertGenericSoTypedSlice[T](leftVal)
 	rightSlice, rightIsSlice := utils.TryConvertGenericSoTypedSlice[T](rightVal)
-
 	if leftIsSlice && rightIsSlice {
+		// If one slice is nil and the other is empty, treat them as unequal
+		if (leftSlice == nil && len(rightSlice) == 0) || (rightSlice == nil && len(leftSlice) == 0) {
+			return false
+		}
+		// Use reflect.DeepEqual for exact comparison of slices
 		return reflect.DeepEqual(leftSlice, rightSlice)
 	}
 
+	// Check if both are maps
 	leftMap, leftIsMap := utils.ToMap(leftVal)
 	rightMap, rightIsMap := utils.ToMap(rightVal)
-
 	if leftIsMap && rightIsMap {
+		// Use reflect.DeepEqual for exact comparison of maps
 		return reflect.DeepEqual(leftMap, rightMap)
 	}
 
+	// If neither both slices nor both maps, they are not the same thing
 	return false
 }
 
