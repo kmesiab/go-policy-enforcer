@@ -26,7 +26,6 @@ func evaluatePolicyCheckOperator(operator string, leftVal, rightVal any) bool {
 	rightVal = utils.DereferencePointer(rightVal)
 
 	// Handle slice comparisons
-	// Handle slice comparisons
 	if reflect.TypeOf(leftVal).Kind() == reflect.Slice || reflect.TypeOf(rightVal).Kind() == reflect.Slice {
 		return EvaluateSliceComparison[any](leftVal, rightVal, operator)
 	}

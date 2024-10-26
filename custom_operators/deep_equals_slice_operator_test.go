@@ -67,3 +67,27 @@ func TestDeepEqualsPolicyCheckFunc_MapAndNonComparableType(t *testing.T) {
 		t.Errorf("expected deepEqualsPolicyCheckFunc to return false for a map and a non-comparable type, but got true")
 	}
 }
+
+func TestDeepEqualsPolicyCheckFunc_SliceEdgeCases(t *testing.T) {
+	tests := []struct {
+		name     string
+		left     []int
+		right    []int
+		expected bool
+	}{
+		{"different lengths", []int{1, 2, 3}, []int{1, 2}, false},
+		{"different content", []int{1, 2, 3}, []int{1, 2, 4}, false},
+		{"empty slices", []int{}, []int{}, true},
+		{"nil slices", nil, nil, true},
+		{"nil and empty", nil, []int{}, true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := deepEqualsPolicyCheckFunc[int](tt.left, tt.right)
+			if result != tt.expected {
+				t.Errorf("got %v, want %v", result, tt.expected)
+			}
+		})
+	}
+}

@@ -160,6 +160,27 @@ for _, policy := range matchedPolicies {
 
 ## Handling Nested and Complex Structs
 
+```go
+type Address struct {
+    City    string
+    Country string
+}
+
+type Person struct {
+    Name    string
+    Address Address
+}
+
+policies := []Policy{
+    {
+        Name: "CityPolicy",
+        Rules: []Rule{
+            {Field: "Address.City", Operator: "==", Value: "Seattle"},
+        },
+    },
+}
+```
+
 The `go-policy-enforcer` library is designed to handle nested and complex
 struct types seamlessly through the use of reflection and dot notation for
 field access.

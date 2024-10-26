@@ -7,25 +7,25 @@ import (
 	"github.com/kmesiab/go-policy-enforcer/internal/utils"
 )
 
-// EqualsPolicyCheckOperator checks if two values are equal.
+// equalsPolicyCheckOperator checks if two values are equal.
 // Returns true if leftVal is equal to rightVal.
-var EqualsPolicyCheckOperator = func(leftVal, rightVal any) bool {
+var equalsPolicyCheckOperator = func(leftVal, rightVal any) bool {
 	leftVal = utils.CoerceToComparable(leftVal)
 	rightVal = utils.CoerceToComparable(rightVal)
 	return reflect.DeepEqual(leftVal, rightVal)
 }
 
-// NotEqualsPolicyCheckOperator checks if two values are not equal.
+// notEqualsPolicyCheckOperator checks if two values are not equal.
 // Returns true if leftVal is not equal to rightVal.
-var NotEqualsPolicyCheckOperator = func(leftVal, rightVal any) bool {
+var notEqualsPolicyCheckOperator = func(leftVal, rightVal any) bool {
 	leftVal = utils.CoerceToComparable(leftVal)
 	rightVal = utils.CoerceToComparable(rightVal)
 	return !reflect.DeepEqual(leftVal, rightVal)
 }
 
-// GreaterThanPolicyCheckOperator checks if the left value is greater than the right value.
+// greaterThanPolicyCheckOperator checks if the left value is greater than the right value.
 // Assumes both values are integers. Returns true if leftVal is greater than rightVal.
-var GreaterThanPolicyCheckOperator = func(leftVal, rightVal any) bool {
+var greaterThanPolicyCheckOperator = func(leftVal, rightVal any) bool {
 	switch left := leftVal.(type) {
 	case int:
 		// Handle int vs float64
@@ -57,9 +57,9 @@ var GreaterThanPolicyCheckOperator = func(leftVal, rightVal any) bool {
 	}
 }
 
-// GreaterThanOrEqualsPolicyCheckOperator checks if the left value is greater than or equal to the right value.
+// greaterThanOrEqualsPolicyCheckOperator checks if the left value is greater than or equal to the right value.
 // Assumes both values are integers. Returns true if leftVal is greater than or equal to rightVal.
-var GreaterThanOrEqualsPolicyCheckOperator = func(leftVal, rightVal any) bool {
+var greaterThanOrEqualsPolicyCheckOperator = func(leftVal, rightVal any) bool {
 	switch left := leftVal.(type) {
 	case int:
 		switch right := rightVal.(type) {
@@ -89,9 +89,9 @@ var GreaterThanOrEqualsPolicyCheckOperator = func(leftVal, rightVal any) bool {
 	}
 }
 
-// LessThanPolicyCheckOperator checks if the left value is less than the right value.
+// lessThanPolicyCheckOperator checks if the left value is less than the right value.
 // Assumes both values are integers. Returns true if leftVal is less than rightVal.
-var LessThanPolicyCheckOperator = func(leftVal, rightVal any) bool {
+var lessThanPolicyCheckOperator = func(leftVal, rightVal any) bool {
 	switch left := leftVal.(type) {
 	case int:
 		switch right := rightVal.(type) {
@@ -121,9 +121,9 @@ var LessThanPolicyCheckOperator = func(leftVal, rightVal any) bool {
 	}
 }
 
-// LessThanOrEqualsPolicyCheckOperator checks if the left value is less than or
+// lessThanOrEqualsPolicyCheckOperator checks if the left value is less than or
 // equal to the right value.
-var LessThanOrEqualsPolicyCheckOperator = func(leftVal, rightVal any) bool {
+var lessThanOrEqualsPolicyCheckOperator = func(leftVal, rightVal any) bool {
 	switch left := leftVal.(type) {
 	case int:
 		switch right := rightVal.(type) {
@@ -153,24 +153,19 @@ var LessThanOrEqualsPolicyCheckOperator = func(leftVal, rightVal any) bool {
 	}
 }
 
-// InPolicyCheckOperator checks if the left value exists in a slice of right values.
-var InPolicyCheckOperator = func(leftVal, rightVal any) bool {
+// inPolicyCheckOperator checks if the left value exists in a slice of right values.
+var inPolicyCheckOperator = func(leftVal, rightVal any) bool {
 	rightSlice, ok := utils.ToStringSlice(rightVal)
 	if !ok {
-		fmt.Printf("Right value %v is not a valid slice\n", rightVal)
 		return false
 	}
 
 	leftStr := fmt.Sprintf("%v", leftVal)
-	fmt.Printf("Checking if %s is in %v\n", leftStr, rightSlice)
 
 	for _, v := range rightSlice {
 		if v == leftStr {
-			fmt.Printf("%s is in %v\n", leftStr, rightSlice)
 			return true
 		}
 	}
-
-	fmt.Printf("%s is not in %v\n", leftStr, rightSlice)
 	return false
 }
