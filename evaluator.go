@@ -9,14 +9,15 @@ import (
 
 // PolicyCheckOperator is a function type that accepts two values of any type
 // and returns a boolean result based on a comparison of the two values.
-type PolicyCheckOperator func(leftVal, rightVal any) bool
+type PolicyCheckOperator[T any] func(T, T) bool
 
-// EvaluatePolicyCheckOperator takes a string operator, a left value, and a right value,
+// evaluatePolicyCheckOperator takes a string operator, a left value, and a right value,
 // retrieves the corresponding PolicyCheckOperator function, and evaluates it with the given values.
 // Returns the result of the comparison as a boolean.
-func EvaluatePolicyCheckOperator(operator string, leftVal, rightVal any) bool {
-	opFunc := GetPolicyCheckOperator(operator)
-	if opFunc == nil {
+func evaluatePolicyCheckOperator(operator string, leftVal, rightVal any) bool {
+	opFunc, err := getPolicyCheckOperator(operator)
+
+	if opFunc == nil || err != nil {
 		fmt.Printf("Operator '%s' is not supported\n", operator)
 		return false
 	}

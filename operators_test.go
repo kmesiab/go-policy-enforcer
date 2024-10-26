@@ -1,8 +1,11 @@
 package go_policy_enforcer
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 
 	"github.com/kmesiab/go-policy-enforcer/internal/utils"
 )
@@ -111,7 +114,7 @@ func TestLessThanPolicyCheckOperator(t *testing.T) {
 	}
 }
 
-// TestEvaluatePolicyCheckOperator tests the EvaluatePolicyCheckOperator function
+// TestEvaluatePolicyCheckOperator tests the evaluatePolicyCheckOperator function
 func TestEvaluatePolicyCheckOperator(t *testing.T) {
 	tests := []struct {
 		operator string
@@ -131,7 +134,7 @@ func TestEvaluatePolicyCheckOperator(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		result := EvaluatePolicyCheckOperator(test.operator, test.leftVal, test.rightVal)
+		result := evaluatePolicyCheckOperator(test.operator, test.leftVal, test.rightVal)
 		if result != test.expected {
 			t.Errorf("EvaluatePolicyCheckOperator(%v, %v, %v) = %v; want %v", test.operator, test.leftVal, test.rightVal, result, test.expected)
 		}
@@ -139,19 +142,24 @@ func TestEvaluatePolicyCheckOperator(t *testing.T) {
 }
 
 func TestGetPolicyCheckOperator_NonExistingOperator(t *testing.T) {
-	nonExistingOperator := "non_existing_operator"
-	opFunc := GetPolicyCheckOperator(nonExistingOperator)
 
-	if opFunc != nil {
-		t.Errorf("Expected nil for operator '%s', but got %v", nonExistingOperator, opFunc)
-	}
+	nonExistingOperator := "non_existing_operator"
+	opFunc, err := getPolicyCheckOperator(nonExistingOperator)
+
+	assert.Errorf(t, err,
+		"Exepcted an error for non existing operator but got none")
+
+	assert.Nil(t, opFunc,
+		fmt.Sprintf("Expected nil for operator '%s', but got %v", nonExistingOperator, opFunc))
 }
 
 func TestGetPolicyCheckOperator_CaseSensitivity(t *testing.T) {
 	operator := "=="
 	expectedOp := EqualsPolicyCheckOperator
 
-	opFunc := GetPolicyCheckOperator(operator)
+	opFunc, err := getPolicyCheckOperator(operator)
+	assert.NoError(t, err)
+
 	if opFunc == nil {
 		t.Errorf("Expected non-nil function for operator '%s', but got nil", operator)
 	} else if !compareFunctions(opFunc, expectedOp) {
@@ -161,7 +169,8 @@ func TestGetPolicyCheckOperator_CaseSensitivity(t *testing.T) {
 	operator = "!="
 	expectedOp = NotEqualsPolicyCheckOperator
 
-	opFunc = GetPolicyCheckOperator(operator)
+	opFunc, err = getPolicyCheckOperator(operator)
+	assert.NoError(t, err)
 	if opFunc == nil {
 		t.Errorf("Expected non-nil function for operator '%s', but got nil", operator)
 	} else if !compareFunctions(opFunc, expectedOp) {
@@ -171,7 +180,9 @@ func TestGetPolicyCheckOperator_CaseSensitivity(t *testing.T) {
 	operator = ">="
 	expectedOp = GreaterThanOrEqualsPolicyCheckOperator
 
-	opFunc = GetPolicyCheckOperator(operator)
+	opFunc, err = getPolicyCheckOperator(operator)
+	assert.NoError(t, err)
+
 	if opFunc == nil {
 		t.Errorf("Expected non-nil function for operator '%s', but got nil", operator)
 	} else if !compareFunctions(opFunc, expectedOp) {
@@ -181,7 +192,9 @@ func TestGetPolicyCheckOperator_CaseSensitivity(t *testing.T) {
 	operator = "in"
 	expectedOp = InPolicyCheckOperator
 
-	opFunc = GetPolicyCheckOperator(operator)
+	opFunc, err = getPolicyCheckOperator(operator)
+	assert.NoError(t, err)
+
 	if opFunc == nil {
 		t.Errorf("Expected non-nil function for operator '%s', but got nil", operator)
 	} else if !compareFunctions(opFunc, expectedOp) {
@@ -190,7 +203,9 @@ func TestGetPolicyCheckOperator_CaseSensitivity(t *testing.T) {
 
 	// Test case sensitivity
 	operator = "IN"
-	opFunc = GetPolicyCheckOperator(operator)
+	opFunc, err = getPolicyCheckOperator(operator)
+	assert.Error(t, err, "Expected function behavior for operator '%s' does not match", operator)
+
 	if opFunc != nil {
 		t.Errorf("Expected nil for operator '%s', but got non-nil", operator)
 	}
@@ -203,7 +218,7 @@ func TestEvaluatePolicyCheckOperator_NilValues(t *testing.T) {
 	var leftVal *string
 	rightVal := "abc"
 
-	result := EvaluatePolicyCheckOperator(operator, leftVal, rightVal)
+	result := evaluatePolicyCheckOperator(operator, leftVal, rightVal)
 	if result {
 		t.Errorf("EvaluatePolicyCheckOperator(%s, nil, %v) = %v; want %v", operator, rightVal, result, false)
 	}
@@ -213,7 +228,7 @@ func TestEvaluatePolicyCheckOperator_NilValues(t *testing.T) {
 	leftVal = &leftValStr
 	var rightValNil *string
 
-	result = EvaluatePolicyCheckOperator(operator, leftVal, rightValNil)
+	result = evaluatePolicyCheckOperator(operator, leftVal, rightValNil)
 	if result {
 		t.Errorf("EvaluatePolicyCheckOperator(%s, %v, nil) = %v; want %v", operator, leftValStr, result, false)
 	}
@@ -222,7 +237,7 @@ func TestEvaluatePolicyCheckOperator_NilValues(t *testing.T) {
 	leftVal = nil
 	rightValNil = nil
 
-	result = EvaluatePolicyCheckOperator(operator, leftVal, rightValNil)
+	result = evaluatePolicyCheckOperator(operator, leftVal, rightValNil)
 	if !result {
 		t.Errorf("EvaluatePolicyCheckOperator(%s, nil, nil) = %v; want %v", operator, result, true)
 	}
@@ -247,7 +262,7 @@ func TestNonNumericValues(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		result := EvaluatePolicyCheckOperator(test.operator, test.leftVal, test.rightVal)
+		result := evaluatePolicyCheckOperator(test.operator, test.leftVal, test.rightVal)
 		if result != test.expected {
 			t.Errorf("EvaluatePolicyCheckOperator(%s, %v, %v) = %v; want %v", test.operator, test.leftVal, test.rightVal, result, test.expected)
 		}
@@ -272,7 +287,8 @@ func TestGetPolicyCheckOperator_NonStringValues(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		opFunc := GetPolicyCheckOperator(test.operator)
+		opFunc, err := getPolicyCheckOperator(test.operator)
+		assert.NoError(t, err)
 		if opFunc == nil {
 			t.Errorf("Expected non-nil function for operator '%s', but got nil", test.operator)
 		} else {
@@ -289,7 +305,7 @@ func TestEvaluatePolicyCheckOperator_UnsupportedOperator(t *testing.T) {
 	leftVal := 10
 	rightVal := 20
 
-	result := EvaluatePolicyCheckOperator(operator, leftVal, rightVal)
+	result := evaluatePolicyCheckOperator(operator, leftVal, rightVal)
 	if result {
 		t.Errorf("Expected EvaluatePolicyCheckOperator('%s', %v, %v) to return false for unsupported operator, but got true", operator, leftVal, rightVal)
 	}
@@ -313,7 +329,7 @@ func TestEvaluatePolicyCheckOperator_NonNumericValues(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		result := EvaluatePolicyCheckOperator(test.operator, test.leftVal, test.rightVal)
+		result := evaluatePolicyCheckOperator(test.operator, test.leftVal, test.rightVal)
 		if result != test.expected {
 			t.Errorf("EvaluatePolicyCheckOperator(%s, %v, %v) = %v; want %v", test.operator, test.leftVal, test.rightVal, result, test.expected)
 		}
@@ -392,7 +408,7 @@ func TestEvaluatePolicyCheckOperator_DifferentDataTypes(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		result := EvaluatePolicyCheckOperator(test.operator, test.leftVal, test.rightVal)
+		result := evaluatePolicyCheckOperator(test.operator, test.leftVal, test.rightVal)
 		if result != test.expected {
 			t.Errorf("EvaluatePolicyCheckOperator(%s, %v, %v) = %v; want %v", test.operator, test.leftVal, test.rightVal, result, test.expected)
 		}
@@ -419,7 +435,7 @@ func TestEvaluatePolicyCheckOperator_SliceComparisons(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		result := EvaluatePolicyCheckOperator(test.operator, test.leftVal, test.rightVal)
+		result := evaluatePolicyCheckOperator(test.operator, test.leftVal, test.rightVal)
 		if result != test.expected {
 			t.Errorf("EvaluatePolicyCheckOperator(%v, %v, %v) = %v; want %v", test.operator, test.leftVal, test.rightVal, result, test.expected)
 		}
@@ -530,7 +546,7 @@ func TestToStringSlice_DifferentDataTypes(t *testing.T) {
 }
 
 // Helper function to compare two functions by applying them on the same test data
-func compareFunctions(f1, f2 PolicyCheckOperator) bool {
+func compareFunctions(f1, f2 PolicyCheckOperator[any]) bool {
 	// Test with sample values, adjust these according to the operator being tested
 	testValue1 := 10
 	testValue2 := 10

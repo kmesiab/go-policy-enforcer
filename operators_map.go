@@ -6,14 +6,14 @@ import (
 
 // PolicyCheckOperatorMap maps string representations of comparison operators
 // to their corresponding PolicyCheckOperator functions.
-var PolicyCheckOperatorMap = map[string]PolicyCheckOperator{
-	"==":  EqualsPolicyCheckOperator,
-	"!=":  NotEqualsPolicyCheckOperator,
-	"===": custom_operators.DeepEqualsPolicyCheckOperator,
-	"!==": custom_operators.NotDeepEqualsPolicyCheckOperator,
-	">":   GreaterThanPolicyCheckOperator,
-	">=":  GreaterThanOrEqualsPolicyCheckOperator,
-	"<":   LessThanPolicyCheckOperator,
-	"<=":  LessThanOrEqualsPolicyCheckOperator,
-	"in":  InPolicyCheckOperator,
+var policyCheckOperatorMap = map[string]PolicyCheckOperator[any]{
+	"==":  PolicyCheckOperator[any](EqualsPolicyCheckOperator),
+	"!=":  PolicyCheckOperator[any](NotEqualsPolicyCheckOperator),
+	"===": PolicyCheckOperator[any](custom_operators.DeepEqualsPolicyCheckOperator),
+	"!==": PolicyCheckOperator[any](custom_operators.NotDeepEqualsPolicyCheckOperator),
+	">":   PolicyCheckOperator[any](GreaterThanPolicyCheckOperator),
+	">=":  PolicyCheckOperator[any](GreaterThanOrEqualsPolicyCheckOperator),
+	"<":   PolicyCheckOperator[any](LessThanPolicyCheckOperator),
+	"<=":  PolicyCheckOperator[any](LessThanOrEqualsPolicyCheckOperator),
+	"in":  PolicyCheckOperator[any](InPolicyCheckOperator),
 }
