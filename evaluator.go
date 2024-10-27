@@ -1,7 +1,6 @@
 package go_policy_enforcer
 
 import (
-	"fmt"
 	"reflect"
 
 	"github.com/kmesiab/go-policy-enforcer/internal/utils"
@@ -9,17 +8,16 @@ import (
 
 // PolicyCheckOperator is a function type that accepts two values of any type
 // and returns a boolean result based on a comparison of the two values.
-type PolicyCheckOperator[T any] func(T, T) bool
+type PolicyCheckOperator[T comparable] func(T, T) bool
 
 // evaluatePolicyCheckOperator takes a string operator, a left value, and a right value,
 // retrieves the corresponding PolicyCheckOperator function, and evaluates it with the given values.
 // Returns the result of the comparison as a boolean.
-func evaluatePolicyCheckOperator(operator string, leftVal, rightVal any) bool {
+func evaluatePolicyCheckOperator(operator string, leftVal, rightVal any) (bool, error) {
 	opFunc, err := getPolicyCheckOperator(operator)
 
 	if opFunc == nil || err != nil {
-		fmt.Printf("Operator '%s' is not supported\n", operator)
-		return false
+		return false, err
 	}
 
 	leftVal = utils.DereferencePointer(leftVal)
@@ -27,13 +25,13 @@ func evaluatePolicyCheckOperator(operator string, leftVal, rightVal any) bool {
 
 	// Handle slice comparisons
 	if reflect.TypeOf(leftVal).Kind() == reflect.Slice || reflect.TypeOf(rightVal).Kind() == reflect.Slice {
-		return EvaluateSliceComparison[any](leftVal, rightVal, operator)
+		return EvaluateSliceComparison[any](leftVal, rightVal, operator), nil
 	}
 
 	leftVal = utils.CoerceToComparable(leftVal)
 	rightVal = utils.CoerceToComparable(rightVal)
 
-	return opFunc(leftVal, rightVal)
+	return opFunc(leftVal, rightVal), nil
 }
 
 // EvaluateSliceComparison compares two slices or checks if a value is within a slice based on the given operator.

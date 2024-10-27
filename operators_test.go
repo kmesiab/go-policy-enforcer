@@ -131,7 +131,13 @@ func TestEvaluatePolicyCheckOperator(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		result := evaluatePolicyCheckOperator(test.operator, test.leftVal, test.rightVal)
+		result, err := evaluatePolicyCheckOperator(test.operator, test.leftVal, test.rightVal)
+
+		if err != nil {
+			t.Errorf("Error evaluating policy check operator: %v", err)
+			continue
+		}
+
 		if result != test.expected {
 			t.Errorf("EvaluatePolicyCheckOperator(%v, %v, %v) = %v; want %v", test.operator, test.leftVal, test.rightVal, result, test.expected)
 		}
@@ -194,8 +200,14 @@ func TestEvaluatePolicyCheckOperator_NilValues(t *testing.T) {
 	var leftVal *string
 	rightVal := "abc"
 
-	result := evaluatePolicyCheckOperator(operator, leftVal, rightVal)
+	result, err := evaluatePolicyCheckOperator(operator, leftVal, rightVal)
+
+	if err != nil {
+		t.Errorf("Error evaluating policy check operator: %v", err)
+	}
+
 	if result {
+
 		t.Errorf("EvaluatePolicyCheckOperator(%s, nil, %v) = %v; want %v", operator, rightVal, result, false)
 	}
 
@@ -204,7 +216,10 @@ func TestEvaluatePolicyCheckOperator_NilValues(t *testing.T) {
 	leftVal = &leftValStr
 	var rightValNil *string
 
-	result = evaluatePolicyCheckOperator(operator, leftVal, rightValNil)
+	result, err = evaluatePolicyCheckOperator(operator, leftVal, rightValNil)
+	if err != nil {
+		t.Errorf("Error evaluating policy check operator: %v", err)
+	}
 	if result {
 		t.Errorf("EvaluatePolicyCheckOperator(%s, %v, nil) = %v; want %v", operator, leftValStr, result, false)
 	}
@@ -213,7 +228,11 @@ func TestEvaluatePolicyCheckOperator_NilValues(t *testing.T) {
 	leftVal = nil
 	rightValNil = nil
 
-	result = evaluatePolicyCheckOperator(operator, leftVal, rightValNil)
+	result, err = evaluatePolicyCheckOperator(operator, leftVal, rightValNil)
+	if err != nil {
+		t.Errorf("Error evaluating policy check operator: %v", err)
+	}
+
 	if !result {
 		t.Errorf("EvaluatePolicyCheckOperator(%s, nil, nil) = %v; want %v", operator, result, true)
 	}
@@ -238,7 +257,13 @@ func TestNonNumericValues(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		result := evaluatePolicyCheckOperator(test.operator, test.leftVal, test.rightVal)
+		result, err := evaluatePolicyCheckOperator(test.operator, test.leftVal, test.rightVal)
+
+		if err != nil {
+			t.Errorf("Error evaluating policy check operator: %v", err)
+			continue
+		}
+
 		if result != test.expected {
 			t.Errorf("EvaluatePolicyCheckOperator(%s, %v, %v) = %v; want %v", test.operator, test.leftVal, test.rightVal, result, test.expected)
 		}
@@ -285,9 +310,14 @@ func TestEvaluatePolicyCheckOperator_UnsupportedOperator(t *testing.T) {
 	leftVal := 10
 	rightVal := 20
 
-	result := evaluatePolicyCheckOperator(operator, leftVal, rightVal)
+	result, err := evaluatePolicyCheckOperator(operator, leftVal, rightVal)
+
+	if err == nil {
+		t.Errorf("Expected error for unsupported operator '%s', but got none", operator)
+	}
+
 	if result {
-		t.Errorf("Expected EvaluatePolicyCheckOperator('%s', %v, %v) to return false for unsupported operator, but got true", operator, leftVal, rightVal)
+		t.Errorf("Expected false result for unsupported operator '%s', but got true", operator)
 	}
 }
 
@@ -309,7 +339,13 @@ func TestEvaluatePolicyCheckOperator_NonNumericValues(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		result := evaluatePolicyCheckOperator(test.operator, test.leftVal, test.rightVal)
+		result, err := evaluatePolicyCheckOperator(test.operator, test.leftVal, test.rightVal)
+
+		if err != nil {
+			t.Errorf("Error evaluating policy check operator: %v", err)
+			continue
+		}
+
 		if result != test.expected {
 			t.Errorf("EvaluatePolicyCheckOperator(%s, %v, %v) = %v; want %v", test.operator, test.leftVal, test.rightVal, result, test.expected)
 		}
@@ -388,7 +424,13 @@ func TestEvaluatePolicyCheckOperator_DifferentDataTypes(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		result := evaluatePolicyCheckOperator(test.operator, test.leftVal, test.rightVal)
+		result, err := evaluatePolicyCheckOperator(test.operator, test.leftVal, test.rightVal)
+
+		if err != nil {
+			t.Errorf("Error evaluating policy check operator: %v", err)
+			continue
+		}
+
 		if result != test.expected {
 			t.Errorf("EvaluatePolicyCheckOperator(%s, %v, %v) = %v; want %v", test.operator, test.leftVal, test.rightVal, result, test.expected)
 		}
@@ -415,7 +457,13 @@ func TestEvaluatePolicyCheckOperator_SliceComparisons(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		result := evaluatePolicyCheckOperator(test.operator, test.leftVal, test.rightVal)
+		result, err := evaluatePolicyCheckOperator(test.operator, test.leftVal, test.rightVal)
+
+		if err != nil {
+			t.Errorf("Error evaluating policy check operator: %v", err)
+			continue
+		}
+
 		if result != test.expected {
 			t.Errorf("EvaluatePolicyCheckOperator(%v, %v, %v) = %v; want %v", test.operator, test.leftVal, test.rightVal, result, test.expected)
 		}
@@ -461,14 +509,13 @@ func TestToStringSlice_EmptySlice(t *testing.T) {
 		t.Errorf("Expected toStringSlice to return true, but got false")
 	}
 
-	if len(result) != len(expectedResult) {
-		t.Errorf("Expected result length %d, but got %d", len(expectedResult), len(result))
+	if result == nil || len(result) > 0 {
+		t.Errorf("Expected result to be non-nil, but got nil")
+		return
 	}
 
-	for i := range result {
-		if result[i] != expectedResult[i] {
-			t.Errorf("Expected result[%d] = %s, but got %s", i, expectedResult[i], result[i])
-		}
+	if len(result) != len(expectedResult) {
+		t.Errorf("Expected result length %d, but got %d", len(expectedResult), len(result))
 	}
 }
 
