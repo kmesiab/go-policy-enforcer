@@ -47,7 +47,7 @@ the project in public spaces.
 ## Reporting Issues
 
 If you experience or observe unacceptable behavior, please report it to the
-project maintainers by emailing [the maintainer](mailto:kmesiab@gmail com)
+project maintainers by emailing the [maintainer](mailto:kmesiab@gmail com)
 . All reports will be handled with discretion.
 
 ## Enforcement

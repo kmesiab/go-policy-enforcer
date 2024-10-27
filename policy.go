@@ -3,6 +3,7 @@ package go_policy_enforcer
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"reflect"
 	"strconv"
@@ -57,12 +58,20 @@ func (p *Policy) Evaluate(resource any) bool {
 				for i := 0; i < fieldValue.Len(); i++ {
 					elem := fieldValue.Index(i).Interface()
 					for _, nestedRule := range nestedRules {
-						// Perform the pattern match
-						if evaluatePolicyCheckOperator(
+
+						ok, err := evaluatePolicyCheckOperator(
 							nestedRule.Operator,
 							reflect.ValueOf(elem).FieldByName(nestedRule.Field).Interface(),
 							nestedRule.Value,
-						) {
+						)
+
+						if err != nil {
+							log.Println(err)
+							return false
+						}
+
+						// Perform the pattern match
+						if ok {
 
 							matched = true
 							break
@@ -91,7 +100,14 @@ func (p *Policy) Evaluate(resource any) bool {
 			return false
 		}
 
-		if !evaluatePolicyCheckOperator(rule.Operator, fieldValue.Interface(), rule.Value) {
+		ok, err := evaluatePolicyCheckOperator(rule.Operator, fieldValue.Interface(), rule.Value)
+
+		if err != nil {
+			fmt.Println(err)
+			return false
+		}
+
+		if !ok {
 			return false
 		}
 	}
