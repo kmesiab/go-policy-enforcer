@@ -58,7 +58,7 @@ code align with the library's standards.
 2. **Clone your forked repository**:
 
    ```sh
-   git clone https://github.com/your-username/go-policy-enforcer.git
+   git clone https://github.com/kmesiab/go-policy-enforcer.git
    cd go-policy-enforcer
    ```
 

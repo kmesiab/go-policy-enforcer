@@ -194,14 +194,6 @@ This powerful feature allows the library to accommodate complex data
 hierarchies and intricate JSON structures, ensuring that your policies
 can be as detailed and comprehensive as needed.
 
-### Explanation of the Example
-
-- The example defines two policies: one that checks if the Age of the
-resource is greater than 25, and another that checks if the Status is “active”.
-- The resource is an object with two fields: Age and Status.
-- The Match function evaluates the resource against the policies. Since
-both policies match the resource, their names are printed as output.
-
 ---
 
 ## ✅ Running Tests
@@ -227,7 +219,7 @@ of the GitHub page.
 2. **Clone Your Fork**: Clone your forked repository to your local machine.
 
    ```bash
-   git clone https://github.com/your-username/go-policy-enforcer.git
+   git clone https://github.com/kmesiab/go-policy-enforcer.git
 
 ---
 
