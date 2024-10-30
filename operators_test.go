@@ -169,6 +169,7 @@ func TestGetPolicyCheckOperator_CaseSensitivity(t *testing.T) {
 		{"!=", notEqualsPolicyCheckOperator, false, false},
 		{">=", greaterThanOrEqualsPolicyCheckOperator, false, false},
 		{"in", inPolicyCheckOperator, false, false},
+		{"not in", notInPolicyCheckOperator, false, false},
 		{"IN", nil, true, true}, // Case-sensitive mismatch should return nil without error
 	}
 
@@ -193,6 +194,7 @@ func TestGetPolicyCheckOperator_CaseSensitivity(t *testing.T) {
 		})
 	}
 }
+
 func TestEvaluatePolicyCheckOperator_NilValues(t *testing.T) {
 	operator := "=="
 
@@ -529,9 +531,6 @@ func (c CustomTestType) String() string {
 }
 
 func TestToStringSlice_DifferentDataTypes(t *testing.T) {
-
-	// Define CustomType with a String method
-
 	tests := []struct {
 		input    any
 		expected []string
@@ -564,12 +563,12 @@ func TestToStringSlice_DifferentDataTypes(t *testing.T) {
 		},
 		{
 			input:    123,
-			expected: nil,
+			expected: []string{"123"},
 			isSlice:  false,
 		},
 		{
 			input:    "hello",
-			expected: nil,
+			expected: []string{"hello"},
 			isSlice:  false,
 		},
 		{
@@ -596,8 +595,8 @@ func TestToStringSlice_DifferentDataTypes(t *testing.T) {
 				t.Errorf("Input: %v\nExpected: %v, but got: %v", test.input, test.expected, result)
 			}
 		} else {
-			if result != nil {
-				t.Errorf("Input: %v\nExpected result to be nil, but got: %v", test.input, result)
+			if !reflect.DeepEqual(result, test.expected) {
+				t.Errorf("Input: %v\nExpected result: %v, but got: %v", test.input, test.expected, result)
 			}
 		}
 	}
