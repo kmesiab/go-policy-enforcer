@@ -212,6 +212,8 @@ We appreciate the contributions from the community that help to make
 `go-policy-enforcer` better. If you would like to contribute, please
 feel free to fork the repository and submit a pull request.
 
+Visit the [CONTRIBUTING.md](CONTRIBUTING.md) guid.
+
 ### How to Contribute
 
 1. **Fork the Repository**: Click the "Fork" button in the top-right corner

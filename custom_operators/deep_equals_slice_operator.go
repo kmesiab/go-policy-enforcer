@@ -28,8 +28,8 @@ func deepEqualsPolicyCheckFunc[T comparable](leftVal, rightVal any) bool {
 	}
 
 	// Check if both are slices
-	leftSlice, leftIsSlice := utils.TryConvertGenericSoTypedSlice[T](leftVal)
-	rightSlice, rightIsSlice := utils.TryConvertGenericSoTypedSlice[T](rightVal)
+	leftSlice, leftIsSlice := utils.TryConvertGenericToTypedSlice[T](leftVal)
+	rightSlice, rightIsSlice := utils.TryConvertGenericToTypedSlice[T](rightVal)
 	if leftIsSlice && rightIsSlice {
 		// If one slice is nil and the other is empty, treat them as unequal
 		if (leftSlice == nil && len(rightSlice) == 0) || (rightSlice == nil && len(leftSlice) == 0) {

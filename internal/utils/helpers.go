@@ -85,7 +85,7 @@ func ToStringSlice(val any) ([]string, bool) {
 	return []string{fmt.Sprintf("%v", val)}, false
 }
 
-// TryConvertGenericSoTypedSlice attempts to convert a generic slice to a typed
+// TryConvertGenericToTypedSlice attempts to convert a generic slice to a typed
 // slice of T. This function uses reflection to determine if the input is a
 // slice, then tries to convert each element to type T.
 //
@@ -102,7 +102,7 @@ func ToStringSlice(val any) ([]string, bool) {
 //     slice. Returns nil if the conversion fails.
 //   - bool: Indicates success (true) if all elements were successfully converted
 //     to type T; false otherwise.
-func TryConvertGenericSoTypedSlice[T any](val any) ([]T, bool) {
+func TryConvertGenericToTypedSlice[T any](val any) ([]T, bool) {
 	// Check if the input value is actually a slice and if it's nil
 	v := reflect.ValueOf(val)
 	if v.Kind() != reflect.Slice || !v.IsValid() || v.IsNil() {

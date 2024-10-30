@@ -60,8 +60,8 @@ func evaluatePolicyCheckOperator(operator string, leftVal, rightVal any) (bool, 
 // - bool: A boolean indicating the result of the comparison.
 func evaluateSliceComparison[T comparable](leftVal, rightVal any, operator string) (bool, error) {
 	// Determine if left or right is the slice comparison
-	leftSlice, leftIsSlice := utils.TryConvertGenericSoTypedSlice[T](leftVal)
-	rightSlice, rightIsSlice := utils.TryConvertGenericSoTypedSlice[T](rightVal)
+	leftSlice, leftIsSlice := utils.TryConvertGenericToTypedSlice[T](leftVal)
+	rightSlice, rightIsSlice := utils.TryConvertGenericToTypedSlice[T](rightVal)
 
 	// Comparing two slices
 	if leftIsSlice && rightIsSlice {
