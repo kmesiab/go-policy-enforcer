@@ -117,5 +117,5 @@ func evaluateSliceComparison[T comparable](leftVal, rightVal any, operator strin
 		}
 	}
 
-	return false, nil
+	return false, fmt.Errorf("invalid comparison: operator '%s' not supported for the given values", operator)
 }
