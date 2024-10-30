@@ -129,8 +129,7 @@ To maintain quality and consistency in custom operators:
     - Nil value handling
 3. **Error Handling**: Implement robust error handling:
     - Validate input types using type assertions
-    -
-        - Handle nil values appropriately
+    - Handle nil values appropriately
     - Consider returning error values for invalid inputs
 4. **Document Behavior**: Include comments detailing:
     - Purpose and use cases
