@@ -90,8 +90,8 @@ func ToStringSlice(val any) ([]string, bool) {
 // slice, then tries to convert each element to type T.
 //
 // If the input value is not a slice or if any element cannot be converted to
-// type T, the function returns nil and false. Note that a runtime panic may
-// occur if an element cannot be directly cast to type T.
+// type T, the function returns nil and false. The function returns false if
+// any element cannot be converted to type T, avoiding runtime panics.
 //
 // Parameters:
 //   - val: The value to convert, expected to be a slice of elements that can be
