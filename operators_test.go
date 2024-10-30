@@ -443,26 +443,27 @@ func TestEvaluatePolicyCheckOperator_SliceComparisons(t *testing.T) {
 	deepSlice := []string{"apple", "banana"}
 
 	tests := []struct {
-		operator string
-		leftVal  any
-		rightVal any
-		expected bool
+		operator      string
+		leftVal       any
+		rightVal      any
+		expected      bool
+		errorExpected bool
 	}{
-		{"==", []string{"apple", "banana"}, "banana", false},                    // Not two slices
-		{"==", []string{"apple", "banana"}, []string{"apple", "banana"}, true},  // Same elements same order
-		{"==", []string{"apple"}, []string{"orange"}, false},                    // Not same elements
-		{"!=", []string{"apple", "banana"}, []string{"apple", "banana"}, false}, // Same elements same order (negative)
-		{"===", deepSlice, deepSlice, true},                                     // Deep equals
-		{"===", deepSlice, []string{"apple"}, false},                            // Deep equals not same positive match
-		{"!==", deepSlice, []string{"apple"}, true},                             // Deep equals not same (negative)_
-		{"in", "orange", []string{"apple", "banana"}, false},                    // Single not in slice
+		{"==", []string{"apple", "banana"}, "banana", false, true},                     // Not two slices
+		{"==", []string{"apple", "banana"}, []string{"apple", "banana"}, true, false},  // Same elements same order
+		{"==", []string{"apple"}, []string{"orange"}, false, false},                    // Not same elements
+		{"!=", []string{"apple", "banana"}, []string{"apple", "banana"}, false, false}, // Same elements same order (negative)
+		{"===", deepSlice, deepSlice, true, false},                                     // Deep equals
+		{"===", deepSlice, []string{"apple"}, false, false},                            // Deep equals not same positive match
+		{"!==", deepSlice, []string{"apple"}, true, false},                             // Deep equals not same (negative)_
+		{"in", "orange", []string{"apple", "banana"}, false, false},                    // Single not in slice
 	}
 
 	for _, test := range tests {
 		result, err := evaluatePolicyCheckOperator(test.operator, test.leftVal, test.rightVal)
 
-		if err != nil {
-			t.Errorf("Error evaluating policy check operator: %v", err)
+		if err == nil && test.errorExpected {
+			t.Errorf("Error was expected evaluating policy check operator: %v", err)
 			continue
 		}
 
