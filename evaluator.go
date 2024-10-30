@@ -1,6 +1,7 @@
 package go_policy_enforcer
 
 import (
+	"fmt"
 	"reflect"
 
 	"github.com/kmesiab/go-policy-enforcer/internal/utils"
@@ -17,7 +18,7 @@ func evaluatePolicyCheckOperator(operator string, leftVal, rightVal any) (bool, 
 	opFunc, err := getPolicyCheckOperator(operator)
 
 	if opFunc == nil || err != nil {
-		return false, err
+		return false, fmt.Errorf("operator '%s' is not supported", operator)
 	}
 
 	leftVal = utils.DereferencePointer(leftVal)
@@ -25,7 +26,14 @@ func evaluatePolicyCheckOperator(operator string, leftVal, rightVal any) (bool, 
 
 	// Handle slice comparisons
 	if reflect.TypeOf(leftVal).Kind() == reflect.Slice || reflect.TypeOf(rightVal).Kind() == reflect.Slice {
-		return EvaluateSliceComparison[any](leftVal, rightVal, operator), nil
+		ok, err := evaluateSliceComparison[any](leftVal, rightVal, operator)
+
+		if err != nil {
+			return false, err
+		}
+
+		return ok, nil
+
 	}
 
 	leftVal = utils.CoerceToComparable(leftVal)
@@ -34,7 +42,7 @@ func evaluatePolicyCheckOperator(operator string, leftVal, rightVal any) (bool, 
 	return opFunc(leftVal, rightVal), nil
 }
 
-// EvaluateSliceComparison compares two slices or checks if a value is within a slice based on the given operator.
+// evaluateSliceComparison compares two slices or checks if a value is within a slice based on the given operator.
 // It supports generic types, allowing it to work with slices of any comparable type.
 //
 // Parameters:
@@ -50,7 +58,7 @@ func evaluatePolicyCheckOperator(operator string, leftVal, rightVal any) (bool, 
 //
 // Returns:
 // - bool: A boolean indicating the result of the comparison.
-func EvaluateSliceComparison[T comparable](leftVal, rightVal any, operator string) bool {
+func evaluateSliceComparison[T comparable](leftVal, rightVal any, operator string) (bool, error) {
 	// Determine if left or right is the slice comparison
 	leftSlice, leftIsSlice := utils.TryConvertGenericSoTypedSlice[T](leftVal)
 	rightSlice, rightIsSlice := utils.TryConvertGenericSoTypedSlice[T](rightVal)
@@ -59,13 +67,15 @@ func EvaluateSliceComparison[T comparable](leftVal, rightVal any, operator strin
 	if leftIsSlice && rightIsSlice {
 		switch operator {
 		case "==":
-			return utils.SlicesContainSameElements(leftSlice, rightSlice)
+			return utils.SlicesContainSameElements(leftSlice, rightSlice), nil
 		case "!=":
-			return !utils.SlicesContainSameElements(leftSlice, rightSlice)
+			return !utils.SlicesContainSameElements(leftSlice, rightSlice), nil
 		case "===":
-			return reflect.DeepEqual(leftSlice, rightSlice)
+			return reflect.DeepEqual(leftSlice, rightSlice), nil
 		case "!==":
-			return !reflect.DeepEqual(leftSlice, rightSlice)
+			return !reflect.DeepEqual(leftSlice, rightSlice), nil
+		default:
+			return false, fmt.Errorf("operator '%s' is not supported for slice comparison", operator)
 		}
 	} else {
 		// Check if a value is within a slice
@@ -73,18 +83,39 @@ func EvaluateSliceComparison[T comparable](leftVal, rightVal any, operator strin
 
 		case "in":
 			if leftIsSlice {
-				return utils.SliceContainsElement(rightVal.(T), leftSlice)
+				val, ok := rightVal.(T)
+				if !ok {
+					return false, fmt.Errorf("failed to convert right value to type T")
+				}
+				return utils.SliceContainsElement(val, leftSlice), nil
 			} else if rightIsSlice {
-				return utils.SliceContainsElement(leftVal.(T), rightSlice)
+				val, ok := leftVal.(T)
+				if !ok {
+					return false, fmt.Errorf("failed to convert left value to type T")
+				}
+				return utils.SliceContainsElement(val, rightSlice), nil
 			}
 		case "not in":
 			if leftIsSlice {
-				return !utils.SliceContainsElement(rightVal.(T), leftSlice)
+
+				val, ok := rightVal.(T)
+				if !ok {
+					return false, fmt.Errorf("failed to convert left value to type T")
+				}
+
+				return !utils.SliceContainsElement(val, leftSlice), nil
+
 			} else if rightIsSlice {
-				return !utils.SliceContainsElement(leftVal.(T), rightSlice)
+
+				val, ok := leftVal.(T)
+				if !ok {
+					return false, fmt.Errorf("failed to convert left value to type T")
+				}
+				return !utils.SliceContainsElement(val, rightSlice), nil
+
 			}
 		}
 	}
 
-	return false
+	return false, nil
 }
