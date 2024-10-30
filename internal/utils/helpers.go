@@ -82,7 +82,7 @@ func ToStringSlice(val any) ([]string, bool) {
 		}
 		return strSlice, true
 	}
-	return nil, false
+	return []string{fmt.Sprintf("%v", val)}, false
 }
 
 // TryConvertGenericSoTypedSlice attempts to convert a generic slice to a typed

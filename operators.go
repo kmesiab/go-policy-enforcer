@@ -18,9 +18,7 @@ var equalsPolicyCheckOperator = func(leftVal, rightVal any) bool {
 // notEqualsPolicyCheckOperator checks if two values are not equal.
 // Returns true if leftVal is not equal to rightVal.
 var notEqualsPolicyCheckOperator = func(leftVal, rightVal any) bool {
-	leftVal = utils.CoerceToComparable(leftVal)
-	rightVal = utils.CoerceToComparable(rightVal)
-	return !reflect.DeepEqual(leftVal, rightVal)
+	return !equalsPolicyCheckOperator(leftVal, rightVal)
 }
 
 // greaterThanPolicyCheckOperator checks if the left value is greater than the right value.
@@ -160,12 +158,31 @@ var inPolicyCheckOperator = func(leftVal, rightVal any) bool {
 		return false
 	}
 
-	leftStr := fmt.Sprintf("%v", leftVal)
+	// Notes: Performance optimization added here to split up
+	// how slice iteration is done. This is done to avoid
+	// the overhead of creating a map for larger slices.
 
+	// Use map for larger slices
+	if len(rightSlice) > 10 {
+		lookup := make(map[string]struct{}, len(rightSlice))
+		for _, v := range rightSlice {
+			lookup[v] = struct{}{}
+		}
+		_, exists := lookup[fmt.Sprintf("%v", leftVal)]
+		return exists
+	}
+
+	// Use slice iteration for smaller slices
+	leftStr := fmt.Sprintf("%v", leftVal)
 	for _, v := range rightSlice {
 		if v == leftStr {
 			return true
 		}
 	}
 	return false
+}
+
+// notInPolicyCheckOperator checks if the left value does not exist in a slice of right values.
+var notInPolicyCheckOperator = func(leftVal, rightVal any) bool {
+	return !inPolicyCheckOperator(leftVal, rightVal)
 }
