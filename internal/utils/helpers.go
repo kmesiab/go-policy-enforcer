@@ -179,31 +179,32 @@ func DereferencePointer(val any) any {
 	return v.Interface()
 }
 
-// CoerceToComparable  takes a value of any type and attempts to coerce it into a comparable type.
-// The function supports coercing strings to integers, floats, or strings if the conversion fails.
+// CoerceToComparable takes a value of any type and attempts to coerce it into a comparable type.
+// It supports converting strings to integers or floats, returning the original string if conversion fails.
 // If the input value is already an integer or float64, it is returned as is.
-// If the input value is a string, the function attempts to convert it to an integer or float64.
-// If the conversion is successful, the corresponding numeric type is returned.
-// If the conversion fails, the function returns the original string value.
-// If the input value is of an unsupported type, the function returns a string representation of the value.
+// For unsupported types, the function returns a string representation of the value.
 func CoerceToComparable(val any) any {
 	switch v := val.(type) {
 	case string:
-		// Try to convert string to int or float
+		// Handle string to number conversion
 		if intValue, err := strconv.Atoi(v); err == nil {
 			return intValue
 		}
 		if floatValue, err := strconv.ParseFloat(v, 64); err == nil {
 			return floatValue
 		}
-		// If the string cannot be converted, return it as-is
-		return v
-	case int, float64:
-		// If it's already a number, return it
-		return v
+		// Consider hexadecimal or other formats if needed
+
+		return v // Return the original string if conversion fails
+
+	case int, int64, float32, float64:
+		return v // Return if already a comparable type
+
+	case nil:
+		return "nil" // Handle nil values explicitly
+
 	default:
-		// If it's any other type, return it as-is
-		return fmt.Sprintf("%v", v) // convert other types to string for comparison
+		return fmt.Sprintf("%v", v) // Fallback for unsupported types
 	}
 }
 
@@ -214,14 +215,14 @@ func CoerceToComparable(val any) any {
 // - value: The input value of any type.
 //
 // Returns:
-// - int: The length of the input value. If the input value is not an array, slice, string, or map,
-//   the function returns 0.
+//   - int: The length of the input value. If the input value is not an array, slice, string, or map,
+//     the function returns 0.
 func Len[T any](value T) int {
-    v := reflect.ValueOf(value)
-    switch v.Kind() {
-    case reflect.Array, reflect.Slice, reflect.String, reflect.Map:
-        return v.Len()
-    default:
-        return 0
-    }
+	v := reflect.ValueOf(value)
+	switch v.Kind() {
+	case reflect.Array, reflect.Slice, reflect.String, reflect.Map:
+		return v.Len()
+	default:
+		return 0
+	}
 }
