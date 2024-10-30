@@ -114,6 +114,9 @@ func evaluateSliceComparison[T comparable](leftVal, rightVal any, operator strin
 				return !utils.SliceContainsElement(val, rightSlice), nil
 
 			}
+		default:
+			return false, fmt.Errorf("operator '%s' is not supported for value-to-slice comparison", operator)
+
 		}
 	}
 

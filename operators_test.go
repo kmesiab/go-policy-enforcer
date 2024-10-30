@@ -358,77 +358,88 @@ func TestEvaluatePolicyCheckOperator_DifferentDataTypes(t *testing.T) {
 	sameSlice := []string{"abc", "xyz"}
 
 	tests := []struct {
-		operator string
-		leftVal  any
-		rightVal any
-		expected bool
+		operator      string
+		leftVal       any
+		rightVal      any
+		expected      bool
+		errorExpected bool
 	}{
 		{
-			operator: "==",
-			leftVal:  []string{"apple", "banana"},
-			rightVal: []string{"apple", "banana"},
-			expected: true,
+			operator:      "==",
+			leftVal:       []string{"apple", "banana"},
+			rightVal:      []string{"apple", "banana"},
+			expected:      true,
+			errorExpected: false,
 		},
 		{
-			operator: "==",
-			leftVal:  []string{"apple", "banana"},
-			rightVal: []string{"banana", "apple"},
-			expected: true,
+			operator:      "==",
+			leftVal:       []string{"apple", "banana"},
+			rightVal:      []string{"banana", "apple"},
+			expected:      true,
+			errorExpected: false,
 		},
 		{
-			operator: "==",
-			leftVal:  []string{"apple", "banana"},
-			rightVal: "banana",
-			expected: false,
+			operator:      "==",
+			leftVal:       []string{"apple", "banana"},
+			rightVal:      "banana",
+			expected:      false,
+			errorExpected: true,
 		},
 		{
-			operator: "===",
-			leftVal:  []string{"apple", "banana"},
-			rightVal: []string{"banana", "apple"},
-			expected: false,
+			operator:      "===",
+			leftVal:       []string{"apple", "banana"},
+			rightVal:      []string{"banana", "apple"},
+			expected:      false,
+			errorExpected: false,
 		},
 		{
-			operator: "===",
-			leftVal:  sameSlice,
-			rightVal: sameSlice,
-			expected: true,
+			operator:      "===",
+			leftVal:       sameSlice,
+			rightVal:      sameSlice,
+			expected:      true,
+			errorExpected: false,
 		},
 		{
-			operator: "!=",
-			leftVal:  []string{"apple", "banana"},
-			rightVal: []string{"apple", "banana"},
-			expected: false,
+			operator:      "!=",
+			leftVal:       []string{"apple", "banana"},
+			rightVal:      []string{"apple", "banana"},
+			expected:      false,
+			errorExpected: false,
 		},
 		{
-			operator: "!=",
-			leftVal:  []string{"apple", "banana"},
-			rightVal: []string{"banana", "apple"},
-			expected: false,
+			operator:      "!=",
+			leftVal:       []string{"apple", "banana"},
+			rightVal:      []string{"banana", "apple"},
+			expected:      false,
+			errorExpected: false,
 		},
 		{
-			operator: "!=",
-			leftVal:  []string{"apple", "banana"},
-			rightVal: "bananas",
-			expected: false,
+			operator:      "!=",
+			leftVal:       []string{"apple", "banana"},
+			rightVal:      "bananas",
+			expected:      false,
+			errorExpected: true,
 		},
 		{
-			operator: "in",
-			leftVal:  "banana",
-			rightVal: []string{"apple", "banana"},
-			expected: true,
+			operator:      "in",
+			leftVal:       "banana",
+			rightVal:      []string{"apple", "banana"},
+			expected:      true,
+			errorExpected: false,
 		},
 		{
-			operator: "in",
-			leftVal:  "orange",
-			rightVal: []string{"apple", "banana"},
-			expected: false,
+			operator:      "in",
+			leftVal:       "orange",
+			rightVal:      []string{"apple", "banana"},
+			expected:      false,
+			errorExpected: false,
 		},
 	}
 
 	for _, test := range tests {
 		result, err := evaluatePolicyCheckOperator(test.operator, test.leftVal, test.rightVal)
 
-		if err != nil {
+		if err != nil && !test.errorExpected {
 			t.Errorf("Error evaluating policy check operator: %v", err)
 			continue
 		}
