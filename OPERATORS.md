@@ -15,7 +15,7 @@ Before diving into operators, ensure you have the project set up locally:
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/yourusername/go-policy-enforcer.git  
+   git clone https://github.com/kmesiab/go-policy-enforcer.git  
    ```
 
 2. Install dependencies and build the project:
@@ -31,18 +31,21 @@ The `go-policy-enforcer` library includes several predefined operators for
 evaluating policy rule conditions. Below is a breakdown of each:
 
 **Equality Operators**:
-    - `==`: Checks if two values are equal (`reflect.DeepEqual`).
-    - `!=`: Checks if two values are not equal.
+
+- `==`: Checks if two values are equal (`reflect.DeepEqual`).
+- `!=`: Checks if two values are not equal.
 
 **Comparison Operators**:
-    - `>`: Verifies if the left value is greater than the right.
-    - `<`: Checks if the left value is less than the right.
-    - `>=`: Determines if the left value is greater than or equal to the right.
-    - `<=`: Ensures the left value is less than or equal to the right.
+
+- `>`: Verifies if the left value is greater than the right.
+- `<`: Checks if the left value is less than the right.
+- `>=`: Determines if the left value is greater than or equal to the right.
+- `<=`: Ensures the left value is less than or equal to the right.
 
 **Membership Operators**:
-    - `in`: Validates if a value is present within a slice.
-    - `not in`: Confirms a value is absent from a slice.
+
+- `in`: Validates if a value is present within a slice.
+- `not in`: Confirms a value is absent from a slice.
 
 These operators offer flexibility in policy enforcement, supporting a wide
 range of comparisons across data types.
@@ -53,20 +56,22 @@ The operator framework in `go-policy-enforcer` is built around key principles:
 
 - **Extensibility**: Operators are function-based, allowing easy extension.
 - **Simplicity**: Using function pointers for operator definitions simplifies
-the extension process.
+  the extension process.
 - **Reusability**: Operators use Go’s type assertion and reflection, handling
-various data types and making them versatile.
+  various data types and making them versatile.
 
 ## File Structure
 
 Here is an overview of the core files associated with operators to guide new
 contributors:
 
-- `operators.go`: Contains predefined operators.
-- `operators_map.go`: Maintains the mapping between operator keys and their
-functions.
-- `custom_operators/`: Directory where custom operators should be created.
-- `operators_test.go`: Houses test cases for validating operators.
+-`operators.go`: Contains predefined operators and their implementations.
+-`operators_map.go`: Maintains the mapping between operator keys and their
+functions. This is where new operators are registered.
+-`custom_operators/`: Directory for custom operator implementations. Each
+operator should be in its own file.
+-`operators_test.go`: Contains comprehensive test cases for validating
+operator behavior and integration.
 
 ## Creating Custom Operators
 
@@ -83,8 +88,8 @@ package custom_operators
 
 // Example of a custom operator function
 var CustomOperator = func(leftVal, rightVal any) bool {
-// Your custom logic here
-return false // Placeholder logic
+    // Your custom logic here
+    return false // Placeholder logic
 }
 ```
 
@@ -115,8 +120,20 @@ the specified key:
 To maintain quality and consistency in custom operators:
 
 1. **Follow Established Patterns**: Use the structure of existing operators for
-consistency.
+   consistency.
 2. **Thorough Testing**: Test custom operators under various scenarios in a
-   custom est file.
-3. **Document Behavior**: Include comments detailing the purpose, input types,
-and logic of the operator for clarity and usability.
+   custom test file, including:
+    - Valid input cases
+    - Edge cases and boundary conditions
+    - Type assertion failures
+    - Nil value handling
+3. **Error Handling**: Implement robust error handling:
+    - Validate input types using type assertions
+    -
+        - Handle nil values appropriately
+    - Consider returning error values for invalid inputs
+4. **Document Behavior**: Include comments detailing:
+    - Purpose and use cases
+    - Expected input types and constraints
+    - Error handling behavior
+    - Example usage in policies

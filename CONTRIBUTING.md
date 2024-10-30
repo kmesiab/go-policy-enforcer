@@ -68,8 +68,12 @@ code align with the library's standards.
    git checkout -b feature/your-feature-name
    ```
 
-4. **Install dependencies**: Ensure you have Go 1.16+ installed, with
-   dependencies managed by Go modules.
+4. **Install dependencies**: Ensure you have installed Go 1.16+ and that
+   dependencies are managed by Go modules. Verify your Go version with:
+
+```sh
+   go version
+```
 
 ## Style Guidelines
 
@@ -78,7 +82,16 @@ code align with the library's standards.
 We follow idiomatic Go patterns. Key practices include:
 
 - **Formatting**: Run `go fmt` on all code.
-- **Linting**: Use `go vet` to check for issues.
+- +**Linting**: Use `golangci-lint` for comprehensive static analysis:
+  
+```sh
+# Install golangci-lint
+go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+
+# Run linting
+golangci-lint run
+```
+
 - **Naming**: Use descriptive names for functions and variables; avoid
   abbreviations unless widely understood (e.g., `len`, `fmt`).
 - **Error Handling**: Return explicit error values, and log errors with
