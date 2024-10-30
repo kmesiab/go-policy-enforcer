@@ -186,25 +186,27 @@ func DereferencePointer(val any) any {
 func CoerceToComparable(val any) any {
 	switch v := val.(type) {
 	case string:
-		// Handle string to number conversion
+		// Try to convert string to int or float
 		if intValue, err := strconv.Atoi(v); err == nil {
 			return intValue
 		}
 		if floatValue, err := strconv.ParseFloat(v, 64); err == nil {
 			return floatValue
 		}
-		// Consider hexadecimal or other formats if needed
-
-		return v // Return the original string if conversion fails
-
-	case int, int64, float32, float64:
-		return v // Return if already a comparable type
-
-	case nil:
-		return "nil" // Handle nil values explicitly
-
+		// If the string cannot be converted, return it as-is
+		return v
+	case int, int8, int16, int32, int64:
+		// If it's an integer type, return it as is
+		return v
+	case uint, uint8, uint16, uint32, uint64:
+		// If it's an unsigned integer type, return it as is
+		return v
+	case float32, float64:
+		// If it's a float type, return it as is
+		return v
 	default:
-		return fmt.Sprintf("%v", v) // Fallback for unsupported types
+		// If it's any other type, return it as-is
+		return fmt.Sprintf("%v", v) // convert other types to string for comparison
 	}
 }
 
