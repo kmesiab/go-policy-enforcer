@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	finalizedPolicyExampleFile  = "./example/policies/finalized_policy.json"
-	idRequiredPolicyExampleFile = "./example/policies/id_required_policy.json"
+	finalizedPolicyExampleFile  = "./policies/finalized_policy.json"
+	idRequiredPolicyExampleFile = "./policies/id_required_policy.json"
 )
 
 var (
@@ -18,6 +18,12 @@ var (
 	deniedAsset  = &Asset{ID: 2, Type: "asset", Finalized: false}
 	assetList    = []*Asset{allowedAsset, deniedAsset}
 )
+
+type Asset struct {
+	ID        int    `json:"id"`
+	Type      string `json:"type"`
+	Finalized bool   `json:"state"`
+}
 
 func main() {
 

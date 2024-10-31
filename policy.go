@@ -40,7 +40,6 @@ func (p *Policy) Evaluate(resource any) bool {
 
 	// Ensure we're working with a struct
 	if v.Kind() != reflect.Struct {
-		fmt.Println("The resource provided is not a struct")
 		return false
 	}
 
@@ -49,7 +48,6 @@ func (p *Policy) Evaluate(resource any) bool {
 		if nestedRules, ok := rule.Value.([]Rule); ok {
 			fieldValue, err := getNestedField(v, rule.Field)
 			if err != nil {
-				fmt.Println(err)
 				return false
 			}
 
@@ -91,23 +89,16 @@ func (p *Policy) Evaluate(resource any) bool {
 		// Handle regular policy checks
 		fieldValue, err := getNestedField(v, rule.Field)
 		if err != nil {
-			fmt.Println(err)
 			return false
 		}
 
 		if !fieldValue.CanInterface() {
-			fmt.Printf("Field %s is unexported and cannot be accessed\n", rule.Field)
 			return false
 		}
 
 		ok, err := evaluatePolicyCheckOperator(rule.Operator, fieldValue.Interface(), rule.Value)
 
-		if err != nil {
-			fmt.Println(err)
-			return false
-		}
-
-		if !ok {
+		if err != nil || !ok {
 			return false
 		}
 	}
